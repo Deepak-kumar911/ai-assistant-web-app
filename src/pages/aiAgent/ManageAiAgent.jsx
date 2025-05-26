@@ -43,7 +43,7 @@ const validationSchema = Yup.object({
   color3: Yup.string().required('Required'),
 });
 
-export default function AIAgentPage() {
+export default function ManageAiAgent() {
   const navigate = useNavigate();
   const [agentImg, setAgentImg] = useState(null);
   const [fullAgentImg, setFullAgentImg] = useState(null);

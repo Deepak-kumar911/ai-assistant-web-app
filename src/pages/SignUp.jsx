@@ -64,7 +64,7 @@ export default function SignUp() {
                   onBlur={formik.handleBlur}
                   value={formik.values.email}
                   placeholder="Enter your email"
-                  className="focus:ring-2 focus:ring-blue-500"
+                  color="black"
                 />
                 <FormErrorMessage className='text-red-500'>{formik.errors.email}</FormErrorMessage>
               </FormControl>
@@ -79,14 +79,16 @@ export default function SignUp() {
                   onBlur={formik.handleBlur}
                   value={formik.values.password}
                   placeholder="Enter your password"
-                  className="focus:ring-2 focus:ring-purple-500"
+                  color="black"
+
                 />
                 <FormErrorMessage className='text-red-500'>{formik.errors.password}</FormErrorMessage>
               </FormControl>
 
               <Button
                 type="submit"
-                colorScheme="blue"
+                colorPalette="blue" variant="solid"
+                // colorScheme={}
                 loading={loading}
                 size="lg"
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-md"

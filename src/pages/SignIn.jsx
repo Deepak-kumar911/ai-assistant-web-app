@@ -61,7 +61,8 @@ const SignIn = () => {
                   onBlur={formik.handleBlur}
                   value={formik.values.email}
                   placeholder="Enter your email"
-                  className="focus:ring-2 focus:ring-blue-500"
+                  color="black"
+                  // className="focus:ring-2 focus:ring-blue-500"
                 />
                 <FormErrorMessage className='text-red-500'>{formik.errors.email}</FormErrorMessage>
               </FormControl>
@@ -75,18 +76,19 @@ const SignIn = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.password}
+                  color="black"
                   placeholder="Enter your password"
-                  className="focus:ring-2 focus:ring-purple-500"
+                  // className="focus:ring-2 focus:ring-purple-500"
                 />
                 <FormErrorMessage className='text-red-500'>{formik.errors.password}</FormErrorMessage>
               </FormControl>
 
               <Button
                 type="submit"
-                colorScheme="blue"
+                colorPalette="blue" variant="solid"
                 loading={loading}
                 size="lg"
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-md"
+                // className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-md"
               >
                 Sign In
               </Button>

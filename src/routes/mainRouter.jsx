@@ -10,7 +10,7 @@ import SignUp from '../pages/SignUp'
 import SignIn from '../pages/SignIn'
 import Dashboard from '../pages/Dashboard'
 import AllAgent from '../pages/aiAgent/AllAgent'
-import ManageAiAgent from '../pages/aiAgent/manageAiAgent'
+import ManageAiAgent from '../pages/aiAgent/ManageAiAgent'
 
 import UserLayout from '../layout/UserLayout'
 
