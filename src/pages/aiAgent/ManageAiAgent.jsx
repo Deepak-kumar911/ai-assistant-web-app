@@ -74,7 +74,7 @@ export default function ManageAiAgent() {
     },
   });
 
-  console.log("formik",formik?.values);
+  
   
 
   return (
@@ -111,7 +111,7 @@ export default function ManageAiAgent() {
               <VStack spacing={4} align="start">
                 <HStack spacing={3}>
                 {formik.values?.greetingMsg?.map((msg, index) => (
-                    <HStack>
+                    <HStack key={index}>
                         <FormInputText name={`welcomeMessage[${index}]`} placeholder={`Msg-${index+1}`} formik={formik} handleOnChange={(e,name)=>console.log("e",e,name)}/>
                         {formik.values?.greetingMsg?.length!=1 && <Button onClick={()=>formik.setFieldValue("greetingMsg",formik.values?.greetingMsg?.filter((ele,ind)=>index!=ind))} colorScheme="teal" >-</Button>}
                     </HStack>

@@ -4,7 +4,7 @@ import { HiCheck, HiX } from "react-icons/hi"
 export default function FormSwitch({ label, name, placeholder, formik, handleOnChange }) {
     const { values, errors, touched } = formik
     let error = errors[name] && touched[name]
-    console.log("form switch",error,values[name],name);
+    
     
     return (
         <div>

@@ -9,7 +9,7 @@ import {  registerApi } from '../utils/apiEndPoints';
 import { setToken } from '../utils/helperFunction';
 import { useAppContext } from '../context/AppContext';
 import { useState } from 'react';
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export default function SignUp() {
   const { setLogin } = useAppContext()

@@ -5,7 +5,7 @@ export default function FormInputText({label,name,placeholder,formik,isError,isT
     const { values, errors, touched } = formik
     let error = (touched[name] && errors[name])  || (isTouched && isError)
     const props = formik.getFieldProps(name)
-    console.log("props",props);
+    
     
   return (
     <div>
