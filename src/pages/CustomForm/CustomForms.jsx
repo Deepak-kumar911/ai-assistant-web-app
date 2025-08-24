@@ -1,17 +1,16 @@
-import { Box, Flex, Heading, SimpleGrid } from '@chakra-ui/react'
 import React from 'react'
 import Toolbox from './ToolBox'
 import FormCanvas from './FormCanvas'
 
 function CustomForms() {
   return (
-    <Box>
-      <Heading mb={6}>Forms</Heading>
-     <Flex p={6} gap={6}>
-      <Toolbox />
-      <FormCanvas />
-    </Flex>
-    </Box>
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-6">Forms</h2>
+      <div className="flex gap-6">
+        <Toolbox />
+        <FormCanvas />
+      </div>
+    </div>
   )
 }
 

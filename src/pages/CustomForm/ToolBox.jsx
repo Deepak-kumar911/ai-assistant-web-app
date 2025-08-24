@@ -1,5 +1,3 @@
-import { Box, Heading } from '@chakra-ui/react';
-
 export const formFields = [
   { id: 'text', label: 'Text Field' },
   { id: 'textarea', label: 'Textarea' },
@@ -8,25 +6,20 @@ export const formFields = [
 
 const Toolbox = () => {
   return (
-    <Box w="25%" p={4} borderWidth="1px" bg="gray.50" borderRadius="md">
-      <Heading size="md" mb={4}>Toolbox</Heading>
+    <div className="w-full md:w-1/4 p-4 border bg-gray-50 rounded-md">
+      <h2 className="text-lg font-semibold mb-4">Toolbox</h2>
+
       {formFields.map((field) => (
-        <Box
+        <div
           key={field.id}
           draggable
           onDragStart={(e) => e.dataTransfer.setData('field-type', field.id)}
-          p={3}
-          mb={3}
-          bg="white"
-          borderWidth="1px"
-          borderRadius="md"
-          cursor="grab"
-          _hover={{ bg: 'gray.100' }}
+          className="p-3 mb-3 bg-white border rounded-md cursor-grab hover:bg-gray-100 transition"
         >
           {field.label}
-        </Box>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 };
 

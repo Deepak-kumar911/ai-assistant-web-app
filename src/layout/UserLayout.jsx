@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
-import { Box, Flex, Text, VStack, IconButton } from '@chakra-ui/react';
-import { FiMenu } from 'react-icons/fi';
+import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
-import { Link } from 'react-router-dom';
-
-
+import { useAppContext } from '../context/AppContext';
 export default function UserLayout({ children }) {
+  const { theme, sidebarOpen } = useAppContext()
 
-    return (
-        <Flex direction={{ base: 'column', md: 'row' }}>
-            <Sidebar />
-            <Box
-                w={{ base: '100%', md: '90%' }}
-                minH="100vh"
-                bg="gray.50"
-                p={5}
-                className="transition-all"
-            >
-                {children}
-            </Box>
-        </Flex>
-    );
-};
+
+  return (
+    <div className={`relative flex h-screen overflow-hidden transition-colors duration-300 ${theme.bg} ${theme.text}`}>
+      <Sidebar />
+      <div className={`ml-0 transition-all duration-300 ease-in-out w-full ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+        <Header />
+        <main className="flex-1 overflow-y-auto p-6" style={{height:'100vh'}}>
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
