@@ -4,6 +4,7 @@ import AgentCustomization from '../../components/common/ai-agent/Customization';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAiAgentByIdApi } from '../../utils/apiEndPoints';
 import { toast } from 'react-toastify';
+import WidgetIntegrationSnippet from '../../components/common/ai-agent/widget/WidgetIntegration';
 
 export default function ManageAiAgent() {
   const [activeTab, setActiveTab] = useState('customization');
@@ -87,11 +88,7 @@ export default function ManageAiAgent() {
       value: 'integration',
       label: 'Integration',
       icon: <LuSquareCheck className="w-4 h-4" />,
-      content: (
-        <div className="text-sm text-gray-500 italic">
-          Integration panel coming soon...
-        </div>
-      ),
+      content: <WidgetIntegrationSnippet details={details}/>
     },
   ];
 
