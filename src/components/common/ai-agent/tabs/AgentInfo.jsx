@@ -1,17 +1,18 @@
 import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
-import FormInputField from '../form/FormInputField';
-import { FormToggle } from '../form/FormToggle';
-import FormButton from '../form/FormButton';
-import { agentInfoInitVal, agentInfoValidSchema, customizationInitVal, customizationValidSchema } from '../../../utils/validation';
-import { updateAgentInfoApi } from '../../../utils/apiEndPoints';
+import FormInputField from '../../form/FormInputField';
+import { FormToggle } from '../../form/FormToggle';
+import FormButton from '../../form/FormButton';
+import { agentInfoInitVal, agentInfoValidSchema } from '../../../../utils/validation';
+import { updateAgentInfoApi } from '../../../../utils/apis/apiEndPoints';
 import { useState } from 'react';
-import FormTextArea from '../form/FormTextArea';
+import FormTextArea from '../../form/FormTextArea';
+import { useSelector } from 'react-redux';
 
 
-export default function AgentInfo({ details }) {
+export default function AgentInfo() {
+  const {details} = useSelector(state=>state?.ai_agent)
   const [uploading, setUploading] = useState(false);
-
 
   async function handleSubmit(values) {
     setUploading(true);
@@ -40,9 +41,8 @@ export default function AgentInfo({ details }) {
     onSubmit: handleSubmit
   });
 
-
   return (
-    <div>
+    <div className='p-3 rounded-lg shadow'>
       <h4 className='fs-3 fw-bold py-3'>Agent info</h4>
       <form onSubmit={formik.handleSubmit} className="space-y-6">
         <FormInputField

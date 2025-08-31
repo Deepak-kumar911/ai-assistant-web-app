@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInInitialValues, signInValidationSchema } from '../utils/validation';
 import { toast } from 'react-toastify';
-import { registerApi } from '../utils/apiEndPoints';
-import { setToken } from '../utils/helperFunction';
-import { useAppContext } from '../context/AppContext';
+import { registerApi } from '../utils/apis/apiEndPoints';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { setLogin } from '../stateManagement/slices/authSlice';
 
 const SignUp = () => {
-  const { setLogin } = useAppContext();
+  const dispatch = useDispatch()
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ const SignUp = () => {
       const token = res?.data?.token;
       if (res?.status === 201) {
         toast.success(res?.data?.message);
-        setToken(token);
+        dispatch(setLogin(true));
         setLogin(true);
         navigate('/dashboard');
       }

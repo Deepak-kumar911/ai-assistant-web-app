@@ -1,9 +1,25 @@
+import { useSelector } from 'react-redux';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
-import { useAppContext } from '../context/AppContext';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getToken } from '../utils/helperFunction';
 export default function UserLayout({ children }) {
-  const { theme, sidebarOpen } = useAppContext()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const {theme,sidebarOpen} = useSelector(state=>state?.ui)
+  const {login} = useSelector(state=>state?.auth)
 
+  useEffect(()=>{
+    if(!login || !getToken()){
+      navigate("/sign-in")
+    }
+  },[location?.pathname])
+
+
+  if(!login || !getToken()){
+    return
+  }
 
   return (
     <div className={`relative flex h-screen overflow-hidden transition-colors duration-300 ${theme.bg} ${theme.text}`}>

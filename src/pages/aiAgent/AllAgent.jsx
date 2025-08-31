@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAllUserAIagentApi } from '../../utils/apiEndPoints';
+import { getAllUserAIagentApi } from '../../utils/apis/apiEndPoints';
 import Loader from '../../components/common/Loader';
 import { toast } from 'react-toastify';
 
@@ -43,7 +43,7 @@ const AllAgent = () => {
             >
               <div
                 onClick={() => navigate(`/ai-agent/manage/${agent._id}`)}
-                className="p-5 rounded-2xl shadow-lg transition transform hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+                className={`p-5 rounded-2xl shadow-lg transition transform border-2 border-emerald-500 hover:scale-[1.03] hover:shadow-xl cursor-pointer`}
               >
                 <div className="flex flex-col gap-3">
                   <h3 className="text-lg">{agent?.name}</h3>

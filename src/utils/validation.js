@@ -49,3 +49,11 @@ export const agentInfoValidSchema = yup.object().shape({
     description: yup.string().required('Required'),
     isOnOff: yup.boolean(),
 });
+
+export const agentBehaviourInitVal = {
+    behaviour: '',
+}
+
+export const agentBehaviourValidSchema = yup.object().shape({
+    behaviour: yup.string(),
+});

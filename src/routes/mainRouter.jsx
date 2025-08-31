@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { useAppContext } from '../context/AppContext'
 
 // helper function
 import { getToken } from '../utils/helperFunction'
@@ -14,10 +13,14 @@ import ManageAiAgent from '../pages/aiAgent/ManageAiAgent'
 
 import UserLayout from '../layout/UserLayout'
 import CustomForms from '../pages/CustomForm/CustomForms'
+import { useDispatch, useSelector } from 'react-redux'
+import { logout, setLogin } from '../stateManagement/slices/authSlice'
 
 
 export default function MainRouter() {
-    const { setLogin, login } = useAppContext()
+    const dispatch = useDispatch()
+    const authSlice = useSelector(state=>state?.auth)
+    const login = authSlice?.login
 
     const privateRoute = () => {
         return (
@@ -36,24 +39,16 @@ export default function MainRouter() {
             <>
                 <Route path='/' element={<SignIn />} />
                 <Route path='/sign-in' element={<SignIn />} />
-                <Route path='/sign-up' element={<SignUp />} />
+                {/* <Route path='/sign-up' element={<SignUp />} /> */}
             </>
         )
     }
 
-    useEffect(() => {
-        let token = getToken()
-        if (token) {
-            setLogin(true)
-        }
-    }, [login])
-
-
     return (
         <div>
             <Routes>
-                {login && privateRoute()}
-                {!login && publicRoute()}
+                {privateRoute()}
+                {publicRoute()}
             </Routes>
         </div>
     )
