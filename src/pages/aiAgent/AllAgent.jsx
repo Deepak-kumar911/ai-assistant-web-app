@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAllUserAIagentApi } from '../../utils/apis/apiEndPoints';
 import Loader from '../../components/common/Loader';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { setAgentDetail } from '../../stateManagement/slices/aiAgentSlice';
 
 const AllAgent = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +41,7 @@ const AllAgent = () => {
           {list?.map((agent) => (
             <Link
               to={`/ai-agent/manage/${agent._id}`}
+              // onClick={()=>dispatch(setAgentDetail(agent))}
               key={agent._id}
               className="no-underline"
             >

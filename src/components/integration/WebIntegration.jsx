@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 import { useSelector } from "react-redux";
-import AgentWidgetCustomization from "../tabs/AgentWidgetCustomization";
+import AgentWidgetCustomization from "../common/ai-agent/tabs/AgentWidgetCustomization";
 
 export default function WebIntegration() {
   const {details} = useSelector(state=>state?.ai_agent)

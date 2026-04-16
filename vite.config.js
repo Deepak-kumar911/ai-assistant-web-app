@@ -8,4 +8,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+    server: {
+    allowedHosts: [
+      'chancily-sericate-cari.ngrok-free.dev', // Allows requests from my-app.com
+    ]
+  }
 })
+

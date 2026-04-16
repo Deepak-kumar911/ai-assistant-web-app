@@ -3,7 +3,7 @@ import { LuFolder, LuSquareCheck, LuUser } from 'react-icons/lu';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAiAgentByIdApi } from '../../utils/apis/apiEndPoints';
 import { toast } from 'react-toastify';
-import IntegrationTab from '../../components/common/ai-agent/integration/tab/IntegrationTab';
+import IntegrationTab from '../../components/integration/tab/IntegrationTab';
 import { useDispatch, useSelector } from 'react-redux';
 import { resentAgentDetail, setAgentDetail } from '../../stateManagement/slices/aiAgentSlice';
 import Loader from '../../components/common/Loader';

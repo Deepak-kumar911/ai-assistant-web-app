@@ -1,0 +1,390 @@
+ /* PREMIUM GLASS NODE */
+
+/* =========================
+   PREMIUM GLASS NODE
+========================= */
+
+/* .node {
+  position: relative;
+  min-width: 280px;
+  padding: 16px 18px;
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.45),
+      rgba(255, 255, 255, 0.15)
+    );
+
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  color: #0f172a;
+  font-size: 13px;
+
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+} */
+
+/* Ambient floating animation */
+/* @keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+.node {
+  animation: float 6s ease-in-out infinite;
+} */
+
+/* Hover */
+/* .node:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+} */
+
+/* Selected */
+/* .react-flow__node.selected .node {
+  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.4),
+    0 20px 60px rgba(59, 130, 246, 0.35);
+} */
+
+
+/* NODE HEADER (Visual Hierarchy) */
+/* 
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.node-title {
+  font-size: 14px;
+}
+
+.node-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.25),
+    rgba(59, 130, 246, 0.1)
+  );
+  color: #2563eb;
+} */
+
+
+/* INPUTS (Modern Glass Inputs) */
+/* .node select,
+.node input,
+.node textarea {
+  width: 100%;
+  padding: 7px 10px;
+  margin-top: 8px;
+
+  border-radius: 10px;
+  font-size: 12px;
+
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+
+  outline: none;
+}
+
+.node select:focus,
+.node input:focus,
+.node textarea:focus {
+  border-color: #3b82f6;
+} */
+
+/* HANDLE DESIGN (Visible + Animated) */
+
+/* .react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #1d4ed8
+  );
+
+  border: 2px solid #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.35);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.4);
+  box-shadow:
+    0 0 0 7px rgba(59, 130, 246, 0.4);
+} */
+
+.glass-node {
+  width: 300px;
+  min-height: 140px;
+  border-radius: 24px;
+  padding: 16px;
+
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,0.4);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.15);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-node.selected {
+  transform: scale(1.02);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.3),
+    0 24px 60px rgba(0,0,0,0.18);
+}
+
+/* Gradient header for visual richness */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.node-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: white;
+  background: var(--node-gradient);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.node-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1F2937; /* dark text for contrast */
+}
+
+/* Inputs */
+.glass-node input,
+.glass-node select,
+.glass-node textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 12px;
+
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,0.85);
+
+  color: #1F2937;
+  font-size: 13px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.glass-node input:focus,
+.glass-node textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--node-gradient);
+}
+
+/* Handles */
+.react-flow__handle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--node-gradient);
+  border: 2px solid white;
+  box-shadow: 0 0 8px var(--node-gradient);
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.25);
+}
+
+/* Motion */
+.motion-node {
+  transition: all 0.25s ease;
+}
+
+/* 6️⃣ Edge CSS (DO NOT SKIP) */
+ .react-flow__edge-path {
+  stroke: #2563eb !important;
+  stroke-width: 2.5px;
+  stroke-opacity: 1;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #1d4ed8;
+  stroke-width: 3.5px;
+} 
+
+/* 7️⃣ Ensure Edges Are Above Background */
+ .react-flow__edges {
+  z-index: 2;
+}
+
+.react-flow__nodes {
+  z-index: 2;
+}
+
+.node-plus-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  color: white;
+  font-weight: bold;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.node-plus-btn:hover {
+  transform: scale(1.1);
+}
+
+.react-flow__node {
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.node-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.node-action-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.node-action-btn.add {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+}
+
+.node-action-btn.delete {
+  background: linear-gradient(135deg, #ff5f6d, #ffc371);
+  color: #300;
+}
+
+.node-action-btn:hover {
+  transform: scale(1.1);
+}
+
+.media-preview-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.media-preview-row img,
+.media-preview-row video {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.node-preview-btn {
+  background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+}
+
+
+.media-preview-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.media-thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+}
+
+.media-thumb img,
+.media-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Remove button */
+.media-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.media-thumb:hover .media-remove-btn {
+  opacity: 1;
+  transform: scale(1.1);
+}

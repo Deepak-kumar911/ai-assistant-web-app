@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { motion } from "framer-motion";
-import { addIntegrationApi, getAllIntegrationCategoryApi } from "../../../../../utils/apis/apiEndPoints";
-import Loader from "../../../Loader";
+import Loader from "../../common/Loader";
 import { toast } from "react-toastify";
 import { integrationIcons } from "./IntegrationTab";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getAllIntegrationCategoryApi } from "../../../utils/apis/integrationApi";
 
 
 
@@ -13,6 +14,7 @@ export default function IntegrationModal({ isOpen, setIsOpen,refetch }) {
   const {details} = useSelector(state=>state?.ai_agent)
   const [search, setSearch] = useState("");
   const [list, setList] = useState([]);
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState({ _id: null, loading: false })
 
@@ -30,21 +32,21 @@ export default function IntegrationModal({ isOpen, setIsOpen,refetch }) {
     }
   };
 
-  const addIntegration = async (_id) => {
-    if (!_id || !details?._id) return
-    setSaving({ _id, loading: true });
-    try {
-      const response = await addIntegrationApi({ agentId: details?._id, categoryId: _id });
-      toast.success(response?.data?.message)
-      setIsOpen(false)
-      refetch && refetch()
-    } catch (error) {
-      console.error('Error fetching agents:', error);
-      toast.error(error?.response?.data?.message || 'Something went wrong!');
-    } finally {
-      setSaving({ _id: null, loading: false });
-    }
-  };
+  // const addIntegration = async (_id) => {
+  //   if (!_id || !details?._id) return
+  //   setSaving({ _id, loading: true });
+  //   try {
+  //     const response = await addIntegrationApi({ agentId: details?._id, categoryId: _id });
+  //     toast.success(response?.data?.message)
+  //     setIsOpen(false)
+  //     refetch && refetch()
+  //   } catch (error) {
+  //     console.error('Error fetching agents:', error);
+  //     toast.error(error?.response?.data?.message || 'Something went wrong!');
+  //   } finally {
+  //     setSaving({ _id: null, loading: false });
+  //   }
+  // };
 
   useEffect(() => {
     fetchList();
@@ -99,7 +101,8 @@ export default function IntegrationModal({ isOpen, setIsOpen,refetch }) {
                     key={idx}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => !saving?.loading && addIntegration(item?._id)}
+                    onClick={()=>navigate(`/integration/${item?.type}/overview`)}
+                    // onClick={() => !saving?.loading && addIntegration(item?._id)}
                     disabled={saving?.loading} // disable all while saving
                     className={`flex flex-col gap-2 p-4 rounded-xl border transition bg-white ${saving?.loading ? "opacity-50 cursor-not-allowed" : "hover:border-indigo-500 shadow-sm hover:shadow-md"}`}
                   >

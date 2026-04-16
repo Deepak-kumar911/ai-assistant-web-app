@@ -15,11 +15,13 @@ import UserLayout from '../layout/UserLayout'
 import CustomForms from '../pages/CustomForm/CustomForms'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout, setLogin } from '../stateManagement/slices/authSlice'
+import IntegrationLayout from '../layout/IntegrationLayout'
+import { integrationConfigs } from '../config/integrations/integration'
 
 
 export default function MainRouter() {
     const dispatch = useDispatch()
-    const authSlice = useSelector(state=>state?.auth)
+    const authSlice = useSelector(state => state?.auth)
     const login = authSlice?.login
 
     const privateRoute = () => {
@@ -30,6 +32,8 @@ export default function MainRouter() {
                 <Route path='/ai-agent' element={<UserLayout><AllAgent /></UserLayout>} />
                 <Route path='/ai-agent/manage/:id' element={<UserLayout><ManageAiAgent /></UserLayout>} />
                 <Route path='/form' element={<UserLayout><CustomForms /></UserLayout>} />
+                <Route path="/integration/:platform/*" element={<IntegrationLayout />} />
+
             </>
         )
     }

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import IntegrationModal from "./IntegrationModal"; // the modal we built
 import { FaGlobe, FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
-import { getAllActiveIntegrationApi } from "../../../../../utils/apis/apiEndPoints";
-import Loader from "../../../Loader";
+import Loader from "../../common/Loader";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import WebIntegration from "../WebIntegration";
+import ConnectWhatsApp from "../whatsapp/ConnectWhatsapp";
+import ConnectInstagram from "../instagram/ConnectInstagram";
+import { getAllActiveIntegrationApi } from "../../../utils/apis/integrationApi";
+import { useNavigate } from "react-router-dom";
 
 export const integrationIcons = (name) => {
     switch (name?.toLowerCase()) {
@@ -27,6 +30,7 @@ export default function IntegrationTab() {
     const [activeIntegration, setActiveIntegration] = useState(null);
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
 
     // Dummy integration customization components
     const IntegrationPages = {
@@ -87,7 +91,8 @@ export default function IntegrationTab() {
                             {list?.map((item) => (
                                 <button
                                     key={item._id}
-                                    onClick={() => setActiveIntegration(item?.integrationCategoryId?.name?.toLowerCase())}
+                                    onClick={()=>navigate(`/integration/${item?.integrationCategoryId?.type}/overview`)}
+                                    // onClick={() => setActiveIntegration(item?.integrationCategoryId?.name?.toLowerCase())}
                                     className="flex flex-col items-center gap-2 p-4 rounded-xl border  hover:border-indigo-500 shadow-sm hover:shadow-md transition bg-white" >
                                     <div className="p-3 bg-gray-100 rounded-full">{integrationIcons(item?.integrationCategoryId?.name)}</div>
                                     <h3 className="font-semibold text-gray-800">{item?.integrationCategoryId?.name}</h3>
@@ -98,9 +103,11 @@ export default function IntegrationTab() {
 
                     </>}
                 </div>}
-
+                <div className="flex gap-2">
+                </div>
             {/* Add New Integration Modal */}
             <IntegrationModal isOpen={isOpen} refetch={fetchList} setIsOpen={setIsOpen}/>
+            
         </>
     );
 }

@@ -2,6 +2,20 @@ import axios from "axios";
 import { getToken } from "../helperFunction";
 import { apiUrl } from "../baseUrl";
 
+
+axios.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Handle unauthorized error, e.g., redirect to login
+         window.location.href = '/sign-in';
+        }
+        return Promise.reject(error);
+    }
+)
+
 export const getApiWithToken = (path)=>{
     return axios.get(`${apiUrl}/api/v1/${path}`,{
         headers:{
@@ -11,11 +25,12 @@ export const getApiWithToken = (path)=>{
     })
 }
 
-export const postApiWithToken = (path,data)=>{
+export const postApiWithToken = (path,data,headers={})=>{
     return axios.post(`${apiUrl}/api/v1/${path}`,data,{
         headers:{
             "Authorization" :`Bearer ${getToken()}`,
-            "Content-Type":"application/json"
+            "Content-Type":"application/json",
+            ...(headers ? headers :{} )
         }
     })
 }

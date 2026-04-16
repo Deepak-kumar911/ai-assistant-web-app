@@ -8,7 +8,7 @@ const authSlice = createSlice({
   name: "ai_agent",
   initialState,
   reducers: {
-    setAgentDetail: (state, action) => {
+    setAgentDetail: (state, action) => {     
       state.details = action.payload;
     },
     resentAgentDetail: () => initialState,
