@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getToken } from "../utils/helperFunction";
-import { apiUrl } from "../utils/baseUrl";
+import { apiUrl } from "./baseUrl";
 
 
 axios.interceptors.response.use(
@@ -10,44 +10,55 @@ axios.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Handle unauthorized error, e.g., redirect to login
-         window.location.href = '/sign-in';
+            window.location.href = '/sign-in';
         }
         return Promise.reject(error);
     }
 )
 
-export const getApiWithToken = (path)=>{
-    return axios.get(`${apiUrl}/api/v1/${path}`,{
-        headers:{
-            "Authorization" :`Bearer ${getToken()}`,
-            "Content-Type":"application/json"
+export const getApiWithToken = (path) => {
+    return axios.get(`${apiUrl}/api/v1/${path}`, {
+        headers: {
+            "Authorization": `Bearer ${getToken()}`,
+            "Content-Type": "application/json"
         }
     })
 }
 
-export const postApiWithToken = (path,data,headers={})=>{
-    return axios.post(`${apiUrl}/api/v1/${path}`,data,{
-        headers:{
-            "Authorization" :`Bearer ${getToken()}`,
-            "Content-Type":"application/json",
-            ...(headers ? headers :{} )
+export const postApiWithToken = (path, data, headers = {}) => {
+    return axios.post(`${apiUrl}/api/v1/${path}`, data, {
+        headers: {
+            "Authorization": `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+            ...(headers ? headers : {})
         }
     })
 }
 
-export const putApiWithToken = (path,data)=>{
-    return axios.put(`${apiUrl}/api/v1/${path}`,data,{
-        headers:{
-            "Authorization" :`Bearer ${getToken()}`,
-            "Content-Type":"application/json"
+
+export const putApiWithToken = (path, data) => {
+    return axios.put(`${apiUrl}/api/v1/${path}`, data, {
+        headers: {
+            "Authorization": `Bearer ${getToken()}`,
+            "Content-Type": "application/json"
         }
     })
 }
 
-export const postApiWithoutToken = (path,data)=>{
-    return axios.post(`${apiUrl}/api/v1/${path}`,data)
+export const deleteApiWithToken = (path, headers = {}) => {
+    return axios.delete(`${apiUrl}/api/v1/${path}`, {
+        headers: {
+            "Authorization": `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+            ...(headers ? headers : {})
+        }
+    })
 }
 
-export const putApiWithoutToken = (path,data)=>{
-    return axios.put(`${apiUrl}/api/v1/${path}`,data)
+export const postApiWithoutToken = (path, data) => {
+    return axios.post(`${apiUrl}/api/v1/${path}`, data)
+}
+
+export const putApiWithoutToken = (path, data) => {
+    return axios.put(`${apiUrl}/api/v1/${path}`, data)
 }

@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInInitialValues, signInValidationSchema } from '../utils/validation';
 import { toast } from 'react-toastify';
-import { loginApi } from '../utils/apis/apiEndPoints';
 import { setToken } from '../utils/helperFunction';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setLogin } from '../stateManagement/slices/authSlice';
+import { loginApi } from '../api/authApi';
 
 const MotionDiv = motion.div;
 
@@ -59,9 +59,8 @@ const SignIn = () => {
               id="email"
               name="email"
               type="email"
-              className={`w-full border ${
-                formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-300'
-              } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400`}
+              className={`w-full border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-300'
+                } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400`}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.email}
@@ -81,9 +80,8 @@ const SignIn = () => {
               id="password"
               name="password"
               type="password"
-              className={`w-full border ${
-                formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-gray-300'
-              } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400`}
+              className={`w-full border ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-gray-300'
+                } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400`}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.password}
@@ -98,9 +96,8 @@ const SignIn = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ${
-              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            className={`w-full py-2 px-4 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

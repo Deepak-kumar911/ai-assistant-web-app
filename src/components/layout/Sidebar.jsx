@@ -1,68 +1,252 @@
-
-import {
-    FiMenu, FiX, FiHome, FiPieChart, FiUsers, FiSettings, FiLogOut,
+// components/layout/Sidebar.tsx (Complete working version with debugging)
+import React, { useEffect } from 'react';
+import { 
+  FiGrid, 
+  FiCpu, 
+  FiSettings, 
+  FiLogOut, 
+  FiChevronLeft,
+  FiChevronRight,
+  FiZap,
+  FiBarChart2,
+  FiX
 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toggleMobileSidebar, toggleSidebar } from '../../stateManagement/slices/uiSlice';
+import { toggleSidebar, closeMobileSidebar } from '../../stateManagement/slices/uiSlice';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SiGooglegemini } from 'react-icons/si';
 
 const navItems = [
-    { url: '/dashboard', icon: <FiHome size={20} />, text: 'Dashboard' },
-    { url: '/ai-agent', icon: <FiPieChart size={20} />, text: 'AI Agents' },
-    { url: '/form', icon: <FiUsers size={20} />, text: 'Form' },
-    { url: '/settings', icon: <FiSettings size={20} />, text: 'Settings' },
+  { url: '/dashboard', icon: FiGrid, text: 'Dashboard', badge: null },
+  { url: '/ai-agent', icon: FiCpu, text: 'AI Agents', badge: '3' },
+  { url: '/workflows', icon: FiZap, text: 'Workflows', badge: null },
+  { url: '/analytics', icon: FiBarChart2, text: 'Analytics', badge: null },
+  { url: '/settings', icon: FiSettings, text: 'Settings', badge: null },
 ];
 
 export default function Sidebar() {
-    const dispatch = useDispatch()
-    const { theme, mobileSidebarOpen, sidebarOpen } = useSelector(state => state?.ui)
-    const location = useLocation()
-    const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const { sidebarOpen, mobileSidebarOpen } = useSelector((state) => state?.ui);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (url) => location.pathname.includes(url);
+
+  const handleNavigation = (url) => {
+    navigate(url);
+    // Close mobile sidebar on navigation
+    if (mobileSidebarOpen) {
+      dispatch(closeMobileSidebar());
+    }
+  };
+
+  // Desktop Sidebar - Only visible on desktop
+  const DesktopSidebar = () => (
+    <motion.aside
+      initial={false}
+      animate={{ width: sidebarOpen ? 256 : 80 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed top-0 left-0 z-40 h-full bg-[#0F0F12] border-r border-white/5 flex-col hidden md:flex"
+    >
+      {/* Logo Area */}
+      <div className={`flex items-center h-16 px-4 ${sidebarOpen ? 'justify-between' : 'justify-center'} border-b border-white/5`}>
+        {sidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center gap-2"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
+              <SiGooglegemini className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-semibold text-lg bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              Automate AI
+            </span>
+          </motion.div>
+        )}
+        <button
+          onClick={() => dispatch(toggleSidebar())}
+          className="items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 transition-colors hidden md:flex"
+        >
+          {sidebarOpen ? <FiChevronLeft size={16} /> : <FiChevronRight size={16} />}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.url);
+          return (
+            <motion.button
+              key={item.url}
+              onClick={() => handleNavigation(item.url)}
+              className={`relative flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                active 
+                  ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Icon size={20} className={active ? 'text-cyan-400' : 'group-hover:text-cyan-400 transition-colors'} />
+              {sidebarOpen && (
+                <span className="text-sm font-medium">{item.text}</span>
+              )}
+              {item.badge && sidebarOpen && (
+                <span className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                  {item.badge}
+                </span>
+              )}
+              {!sidebarOpen && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 z-50">
+                  {item.text}
+                </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </nav>
+
+      {/* User Profile */}
+      <div className="p-4 border-t border-white/5">
+        <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
+          <div className="relative">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shadow-lg">
+              <span className="text-white font-semibold">JD</span>
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#0F0F12]" />
+          </div>
+          {sidebarOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 min-w-0"
+            >
+              <p className="text-sm font-medium text-white truncate">John Doe</p>
+              <p className="text-xs text-gray-400 truncate">john@automate.ai</p>
+            </motion.div>
+          )}
+          <button className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white">
+            <FiLogOut size={18} />
+          </button>
+        </div>
+      </div>
+    </motion.aside>
+  );
+
+  // Mobile Sidebar (Drawer)
+  const MobileSidebar = () => {
+    // Debug log
+    useEffect(() => {
+      console.log('MobileSidebar Open State:', mobileSidebarOpen);
+    }, [mobileSidebarOpen]);
 
     return (
-        <>
-            {mobileSidebarOpen && (<div className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden" onClick={() => dispatch(toggleMobileSidebar())}></div> )}
-            <aside
-                className={`fixed z-40 top-0 left-0 h-full ${theme.sidebar} shadow-xl transform transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-20'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} `}>
-                <div className="flex flex-col h-full">
-                    <div className={`flex items-center p-4 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-                        {sidebarOpen && <h1 className="text-xl font-bold tracking-wide">Assistant AI</h1>}
-                        <button onClick={() => dispatch(toggleSidebar())} className="p-2 rounded-md hover:bg-gray-200 md:block hidden">
-                            {sidebarOpen ? <FiX /> : <FiMenu />}
-                        </button>
-                        <button onClick={() => dispatch(toggleMobileSidebar())} className="p-2 rounded-md hover:bg-gray-200 md:hidden">
-                            <FiX />
-                        </button>
-                    </div>
-
-                    <nav className="flex-1 px-2 mt-6 space-y-2">
-                        {navItems.map((item) => (
-                            <button
-                                key={item?.url}
-                                onClick={() => navigate(item?.url)}
-                                className={`flex items-center w-full gap-3 p-3 rounded-xl transition-all duration-200 ${location?.pathname.includes(item?.url) ? `${theme?.primary} text-white` : theme?.hover}`} >
-                                {item?.icon}
-                                {sidebarOpen && <span className="text-sm font-medium">{item?.text}</span>}
-                            </button>
-                        ))}
-                    </nav>
-
-                    <div className={`p-4 border-t ${theme?.border} flex ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-                        {sidebarOpen && (
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">JP</div>
-                                <div>
-                                    <p className="text-sm font-medium">John Parker</p>
-                                    <p className="text-xs text-gray-400">Admin</p>
-                                </div>
-                            </div>
-                        )}
-                        <button className="p-2 rounded-md hover:bg-gray-100">
-                            <FiLogOut />
-                        </button>
-                    </div>
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm md:hidden"
+              onClick={() => {
+                console.log('Backdrop clicked - closing sidebar');
+                dispatch(closeMobileSidebar());
+              }}
+            />
+            
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed top-0 left-0 z-50 w-72 h-full bg-[#0F0F12] border-r border-white/10 flex flex-col shadow-2xl md:hidden"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
+                    <SiGooglegemini className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold text-lg bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                    Automate AI
+                  </span>
                 </div>
-            </aside>
-        </>
-    )
+                <button
+                  onClick={() => {
+                    console.log('Close button clicked');
+                    dispatch(closeMobileSidebar());
+                  }}
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors active:bg-white/20"
+                  aria-label="Close menu"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              {/* Drawer Navigation */}
+              <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.url);
+                  return (
+                    <button
+                      key={item.url}
+                      onClick={() => handleNavigation(item.url)}
+                      className={`flex items-center w-full gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                        active 
+                          ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10' 
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <Icon size={20} className={active ? 'text-cyan-400' : ''} />
+                      <span className="text-sm font-medium flex-1 text-left">{item.text}</span>
+                      {item.badge && (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Drawer User Profile */}
+              <div className="p-4 border-t border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shadow-lg">
+                      <span className="text-white font-semibold">JD</span>
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#0F0F12]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">John Doe</p>
+                    <p className="text-xs text-gray-400 truncate">john@automate.ai</p>
+                  </div>
+                  <button className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white">
+                    <FiLogOut size={18} />
+                  </button>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    );
+  };
+
+  return (
+    <>
+      <DesktopSidebar />
+      <MobileSidebar />
+    </>
+  );
 }

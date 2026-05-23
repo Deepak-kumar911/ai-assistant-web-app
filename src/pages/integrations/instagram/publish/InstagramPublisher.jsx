@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { FiImage, FiVideo, FiCalendar, FiClock } from "react-icons/fi";
-import { uploadMediaApi } from "../../../../utils/apis/uploadApi";
+import { uploadMediaApi } from "../../../../api/uploadApi";
 import { useSelector } from "react-redux";
-import { createInstaMediaContainerApi, publishMediaContainerApi } from "../../../../utils/apis/integration/instagramIntegrationApi";
+import { createInstaMediaContainerApi, publishMediaContainerApi } from "../../../../api/integration/instagramIntegrationApi";
 import FlowCanvas from "../../../../components/workflow/canvas/FlowCanvas";
 
 const InstagramPublisher = () => {
-  const { details:integrationDetails } = useSelector(state => state?.integration)
+  const { details: integrationDetails } = useSelector(state => state?.integration)
   const [mediaType, setMediaType] = useState("post");
   const [media, setMedia] = useState([]);
   const [caption, setCaption] = useState("");
@@ -21,11 +21,11 @@ const InstagramPublisher = () => {
   const activeIntegrationId = integrationDetails?.activeIntegrationId
 
   const postTypes = {
-    "post":{label: "Post", icon: FiImage, mediaType: "IMAGE" ,},
-    "reel":{ label: "Reel", icon: FiVideo, mediaType: "REELS" },
-    "carousel": {label: "Carousel", icon: FiImage, mediaType: "CAROUSEL" },
-    "video":{label: "Video", icon: FiVideo, mediaType: "VIDEO" },
-    "story":{label: "Story", icon: FiVideo, mediaType: "STORIES" },
+    "post": { label: "Post", icon: FiImage, mediaType: "IMAGE", },
+    "reel": { label: "Reel", icon: FiVideo, mediaType: "REELS" },
+    "carousel": { label: "Carousel", icon: FiImage, mediaType: "CAROUSEL" },
+    "video": { label: "Video", icon: FiVideo, mediaType: "VIDEO" },
+    "story": { label: "Story", icon: FiVideo, mediaType: "STORIES" },
   };
 
   const handleFileChange = async (e) => {
@@ -54,16 +54,16 @@ const InstagramPublisher = () => {
   };
 
   const handleSaveMedia = async () => {
-    if (saving || !media?.length || !caption ||!mediaType) return
+    if (saving || !media?.length || !caption || !mediaType) return
     setSaving(true);
 
     try {
-      const payload = { activeIntegrationId, mediaUrl:media?.[0]?.mediaUrl, mediaType:postTypes?.[mediaType]?.mediaType, caption}
+      const payload = { activeIntegrationId, mediaUrl: media?.[0]?.mediaUrl, mediaType: postTypes?.[mediaType]?.mediaType, caption }
       const { data } = await createInstaMediaContainerApi(payload);
       setMediaContainerId(data?.containerId);
     } catch (err) {
-      console.log("error to save",err);
-      
+      console.log("error to save", err);
+
       alert("Failed to save media");
     } finally {
       setSaving(false);
@@ -75,9 +75,9 @@ const InstagramPublisher = () => {
     setPublising(true);
 
     try {
-      const payload = { activeIntegrationId,containerId:mediaContainerId}
+      const payload = { activeIntegrationId, containerId: mediaContainerId }
       const { data } = await publishMediaContainerApi(payload);
-      console.log("data",data);
+      console.log("data", data);
       alert("Posted")
     } catch (err) {
       alert("Failed to publish media");
@@ -86,12 +86,12 @@ const InstagramPublisher = () => {
     }
   };
 
-  console.log("media",mediaContainerId);
-  
+  console.log("media", mediaContainerId);
+
 
   return (
     <div className="">
-        <FlowCanvas />
+      <FlowCanvas />
       <div className="flex h-screen w-full overflow-hidden">
       </div>
       {/* Header */}
@@ -102,7 +102,7 @@ const InstagramPublisher = () => {
 
       {/* Step 1: Post Type Selection */}
       <div className="flex gap-3">
-        {Object.entries(postTypes).map(([key,pt]) => (
+        {Object.entries(postTypes).map(([key, pt]) => (
           <button
             key={key}
             onClick={() => setMediaType(key)}
@@ -188,7 +188,7 @@ const InstagramPublisher = () => {
         {schedule ? (
           <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Schedule</button>
         ) : (
-          <button onClick={handlePublishMedia} disabled={!mediaContainerId}  className="px-4 py-2 bg-green-600 text-white rounded-lg">Publish</button>
+          <button onClick={handlePublishMedia} disabled={!mediaContainerId} className="px-4 py-2 bg-green-600 text-white rounded-lg">Publish</button>
         )}
       </div>
     </div>

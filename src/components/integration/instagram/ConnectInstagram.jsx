@@ -1,22 +1,22 @@
 import { useState } from "react";
-import { connectInstagramApi } from "../../../utils/apis/integration/instagramIntegrationApi";
+import { connectInstagramApi } from "../../../api/integration/instagramIntegrationApi";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
 const ConnectInstagram = () => {
-  const [loading,setLoading] = useState(false)
-    const { details:integrationDetails } = useSelector(state => state?.integration)
+  const [loading, setLoading] = useState(false)
+  const { details: integrationDetails } = useSelector(state => state?.integration)
 
-  const handleConnect = async()=>{
-      setLoading(true)
+  const handleConnect = async () => {
+    setLoading(true)
     try {
       const res = await connectInstagramApi()
-      if(res?.status==200 && res?.data?.url){
+      if (res?.status == 200 && res?.data?.url) {
         window.location.href = res?.data?.url;
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Something went wrong!');
-    }finally{
+    } finally {
       setLoading(false)
     }
   }

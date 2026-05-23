@@ -10,6 +10,7 @@ import SignIn from '../pages/SignIn'
 import Dashboard from '../pages/Dashboard'
 import AllAgent from '../pages/aiAgent/AllAgent'
 import ManageAiAgent from '../pages/aiAgent/ManageAiAgent'
+import Settings from '../pages/Settings'
 
 import UserLayout from '../layout/UserLayout'
 import CustomForms from '../pages/CustomForm/CustomForms'
@@ -17,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logout, setLogin } from '../stateManagement/slices/authSlice'
 import IntegrationLayout from '../layout/IntegrationLayout'
 import { integrationConfigs } from '../config/integrations/integration'
+import OAuthCallback from '../pages/OAuthCallback'
 
 
 export default function MainRouter() {
@@ -32,8 +34,9 @@ export default function MainRouter() {
                 <Route path='/ai-agent' element={<UserLayout><AllAgent /></UserLayout>} />
                 <Route path='/ai-agent/manage/:id' element={<UserLayout><ManageAiAgent /></UserLayout>} />
                 <Route path='/form' element={<UserLayout><CustomForms /></UserLayout>} />
-                <Route path="/integration/:platform/*" element={<IntegrationLayout />} />
-
+                <Route path='/settings' element={<UserLayout><Settings /></UserLayout>} />
+                <Route path="/ai-agent/integration/:platformId/:platform/*" element={<IntegrationLayout />} />
+                <Route path="/oauth/callback" element={<OAuthCallback />} />
             </>
         )
     }

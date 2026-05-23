@@ -2,7 +2,7 @@ import {
     FiMenu, FiX,FiLogOut,
 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import { NavLink, useLocation, useParams } from 'react-router-dom';
+import { Link, NavLink, useLocation, useParams } from 'react-router-dom';
 import { toggleMobileSidebar, toggleSidebar } from '../../stateManagement/slices/uiSlice';
 import { integrationConfigs } from '../../config/integrations/integration';
 
@@ -10,7 +10,7 @@ export default function IntegrationSidebar() {
     const dispatch = useDispatch()
     const { theme, mobileSidebarOpen, sidebarOpen } = useSelector(state => state?.ui)
     const location = useLocation()
-    const { platform } = useParams();
+    const { platform,platformId } = useParams();
 
 
     if (!platform || !integrationConfigs[platform]) {
@@ -26,7 +26,7 @@ export default function IntegrationSidebar() {
                 className={`fixed z-40 top-0 left-0 h-full ${theme.sidebar} shadow-xl transform transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-20'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} `}>
                 <div className="flex flex-col h-full">
                     <div className={`flex items-center p-4 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-                        {sidebarOpen && <h1 className="text-xl font-bold tracking-wide">Assistant AI</h1>}
+                        {sidebarOpen && <Link to={"/ai-agent"} className="text-xl font-bold tracking-wide">Assistant AI</Link>}
                         <button onClick={() => dispatch(toggleSidebar())} className="p-2 rounded-md hover:bg-gray-200 md:block hidden">
                             {sidebarOpen ? <FiX /> : <FiMenu />}
                         </button>
@@ -41,7 +41,7 @@ export default function IntegrationSidebar() {
                             const Icon = item.icon;
                             return <NavLink
                                 key={item.path}
-                                to={`/integration/${platform}/${item.path}`}
+                                to={`/ai-agent/integration/${platformId}/${platform}/${item.path}`}
                                 className={`flex items-center w-full gap-3 p-3 rounded-xl transition-all duration-200 ${location?.pathname.includes(item?.path) ? `${theme?.primary} text-white` : theme?.hover}`} >
                                  <Icon size={item?.iconSize} />
                                 {sidebarOpen && <span className="text-sm font-medium">{item?.label}</span>}

@@ -34,9 +34,6 @@ export default function FlowCanvas() {
         // type: "smoothstep",
       }))
     );
-  
-  console.log("edges",direction,edges)
-  console.log("nodes",nodes)
 
 
   useFlowLayout({
@@ -80,32 +77,34 @@ export default function FlowCanvas() {
     return true;
   };
 
+  console.log("edges", edges)
+
   return (
     <>
       {/* 🔘 Layout Direction Switch */}
-    <div className="flow-canvas">
-      <FlowLayoutSwitch
-        direction={direction}
-        onChange={setDirection}
-      />
+      <div className="flow-canvas">
+        <FlowLayoutSwitch
+          direction={direction}
+          onChange={setDirection}
+        />
 
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        isValidConnection={isValidConnection}
-        fitView
-        snapToGrid
-        snapGrid={snapGrid}
-        defaultViewport={defaultViewport}
-      >
-        <Controls  position="top-right" />
-        <Background gap={20} />
-      </ReactFlow>
-    </div>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          isValidConnection={isValidConnection}
+          fitView
+          snapToGrid
+          snapGrid={snapGrid}
+          defaultViewport={defaultViewport}
+        >
+          <Controls position="top-right" />
+          <Background gap={20} />
+        </ReactFlow>
+      </div>
     </>
   );
 }
