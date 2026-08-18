@@ -20,6 +20,7 @@ const InstagramPublisher = () => {
   const aiAgentId = integrationDetails?._id
   const activeIntegrationId = integrationDetails?.activeIntegrationId
 
+
   const postTypes = {
     "post": { label: "Post", icon: FiImage, mediaType: "IMAGE", },
     "reel": { label: "Reel", icon: FiVideo, mediaType: "REELS" },

@@ -39,6 +39,7 @@ export default function IntegrationLayout() {
   }, []);
 
 
+
   return (
     <>
       <div className={`relative flex h-screen overflow-hidden transition-colors duration-300 ${theme.bg} ${theme.text}`}>
@@ -55,11 +56,10 @@ export default function IntegrationLayout() {
 
               {config.sidebar.map((item) => {
                 const Component = item?.component;
-                
                 return (
                   <Route
                     key={item.path}
-                    path={`/ai-agent/integration/${platformId}/${platform}/${item.path}`}
+                    path={item.path}
                     element={Component ? (<Component />) : (
                       <div>
                         {config.name} - {item.label} Page
