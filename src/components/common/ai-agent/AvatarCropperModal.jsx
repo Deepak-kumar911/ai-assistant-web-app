@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUploadCloud, FiX, FiCheck, FiZoomIn, FiZoomOut, FiRotateCcw } from "react-icons/fi";
 import { toast } from "react-toastify";
@@ -6,7 +7,7 @@ import { uploadAgentAvatarApi } from "../../../api/integration/webIntegrationApi
 import { useDispatch } from "react-redux";
 import { setAgentDetail } from "../../../stateManagement/slices/aiAgentSlice";
 
-export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuccess }) {
+export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuccess, initialFile }) {
   const dispatch = useDispatch();
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -20,7 +21,7 @@ export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuc
   const imgRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Reset when modal opens/closes
+  // Reset or load initial file when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setSelectedFile(null);
@@ -28,8 +29,17 @@ export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuc
       setZoom(1);
       setPan({ x: 0, y: 0 });
       setUploading(false);
+    } else if (initialFile) {
+      setSelectedFile(initialFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageSrc(reader.result);
+        setZoom(1);
+        setPan({ x: 0, y: 0 });
+      };
+      reader.readAsDataURL(initialFile);
     }
-  }, [isOpen]);
+  }, [isOpen, initialFile]);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -227,15 +237,16 @@ export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuc
   };
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex min-h-full items-center justify-center p-3 sm:p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="w-full max-w-md bg-[#0F0F12] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+          className="w-full max-w-md bg-[#0F0F12] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto max-h-[calc(100dvh-2rem)] sm:max-h-[85vh]"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/[0.02]">
@@ -367,6 +378,7 @@ export default function AvatarCropperModal({ isOpen, onClose, agent, onUploadSuc
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

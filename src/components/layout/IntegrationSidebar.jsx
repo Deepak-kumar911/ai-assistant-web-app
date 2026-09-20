@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FiMenu,
   FiX,
@@ -17,6 +17,7 @@ import { logout } from '../../stateManagement/slices/authSlice';
 import { logoutApi } from '../../api/authApi';
 import { clearAuthTokens } from '../../utils/helperFunction';
 import { motion } from 'framer-motion';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 export default function IntegrationSidebar() {
   const dispatch = useDispatch();
@@ -26,6 +27,9 @@ export default function IntegrationSidebar() {
   const user = auth?.details;
   const location = useLocation();
   const { platform, platformId } = useParams();
+
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (!platform || !integrationConfigs[platform]) {
     return <div className="p-6 text-gray-400">Platform not supported</div>;
@@ -46,27 +50,19 @@ export default function IntegrationSidebar() {
     }
   };
 
-  const getInitials = () => {
-    if (user?.name) {
-      return user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
-    }
-    return user?.email?.substring(0, 2).toUpperCase() || 'AI';
-  };
-
-  const handleLogout = async () => {
+  const handleConfirmLogout = async () => {
     try {
+      setIsLoggingOut(true);
       await logoutApi();
-    } catch (e) {
+    } catch (_) {
       // ignore
+    } finally {
+      clearAuthTokens();
+      dispatch(logout());
+      setIsLoggingOut(false);
+      setIsLogoutModalOpen(false);
+      navigate('/sign-in');
     }
-    clearAuthTokens();
-    dispatch(logout());
-    navigate('/sign-in');
   };
 
   return (
@@ -79,26 +75,22 @@ export default function IntegrationSidebar() {
       )}
 
       <aside
-        className={`fixed z-40 top-0 left-0 h-full bg-[#0F0F12] border-r border-white/5 shadow-2xl flex flex-col transition-all duration-300 ease-in-out ${
-          sidebarOpen ? 'w-64' : 'w-20'
+        className={`fixed z-40 top-0 left-0 h-full bg-[#0F0F12] border-r border-white/5 shadow-2xl flex flex-col transition-all duration-300 ease-in-out w-72 max-w-[85vw] md:max-w-none ${
+          sidebarOpen ? 'md:w-64' : 'md:w-20'
         } ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
         {/* Top App Branding */}
         <div
-          className={`flex items-center h-16 px-4 ${
-            sidebarOpen ? 'justify-between' : 'justify-center'
-          } border-b border-white/5`}
+          className="flex items-center h-16 px-4 justify-between border-b border-white/5"
         >
-          {sidebarOpen && (
-            <Link to="/ai-agent" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-md">
-                <SiGooglegemini className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-semibold text-base bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                Automate AI
-              </span>
-            </Link>
-          )}
+          <Link to="/ai-agent" className={`flex items-center gap-2 group ${!sidebarOpen ? 'md:hidden flex' : 'flex'}`}>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-md">
+              <SiGooglegemini className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-semibold text-base bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              Automate AI
+            </span>
+          </Link>
 
           <button
             onClick={() => dispatch(toggleSidebar())}
@@ -110,6 +102,7 @@ export default function IntegrationSidebar() {
           <button
             onClick={() => dispatch(toggleMobileSidebar())}
             className="items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors md:hidden cursor-pointer"
+            aria-label="Close sidebar"
           >
             <FiX size={18} />
           </button>
@@ -120,27 +113,25 @@ export default function IntegrationSidebar() {
           <Link
             to="/ai-agent"
             className={`flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 rounded-xl transition-all ${
-              sidebarOpen ? 'justify-start' : 'justify-center'
+              sidebarOpen ? 'justify-start' : 'md:justify-center justify-start'
             }`}
           >
             <FiArrowLeft size={14} className="text-cyan-400 shrink-0" />
-            {sidebarOpen && <span>Back to AI Agents</span>}
+            <span className={!sidebarOpen ? 'md:hidden inline' : 'inline'}>Back to AI Agents</span>
           </Link>
         </div>
 
         {/* Integration Header Label */}
-        {sidebarOpen && (
-          <div className="px-4 pt-4 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded-lg bg-white/5 border border-white/10">
-                {getPlatformIcon()}
-              </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-300">
-                {name} Automation
-              </span>
+        <div className={`px-4 pt-4 pb-2 ${!sidebarOpen ? 'md:hidden block' : 'block'}`}>
+          <div className="flex items-center gap-2">
+            <div className="p-1 rounded-lg bg-white/5 border border-white/10">
+              {getPlatformIcon()}
             </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-300">
+              {name} Automation
+            </span>
           </div>
-        )}
+        </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
@@ -158,11 +149,10 @@ export default function IntegrationSidebar() {
                   onClick={() => {
                     if (mobileSidebarOpen) dispatch(closeMobileSidebar());
                   }}
-                  className={`relative flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                    active
+                  className={`relative flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${active
                       ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10 shadow-sm'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  } ${!sidebarOpen ? 'justify-center' : ''}`}
+                    } ${!sidebarOpen ? 'md:justify-center justify-start' : ''}`}
                 >
                   <Icon
                     size={item?.iconSize || 18}
@@ -172,10 +162,10 @@ export default function IntegrationSidebar() {
                         : 'text-gray-400 group-hover:text-cyan-400 shrink-0 transition-colors'
                     }
                   />
-                  {sidebarOpen && <span className="truncate">{item?.label}</span>}
+                  <span className={`truncate ${!sidebarOpen ? 'md:hidden inline' : 'inline'}`}>{item?.label}</span>
 
                   {!sidebarOpen && (
-                    <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#1A1A1E] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-50">
+                    <div className="hidden md:block absolute left-full ml-2 px-2.5 py-1 bg-[#1A1A1E] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-50">
                       {item?.label}
                     </div>
                   )}
@@ -184,46 +174,54 @@ export default function IntegrationSidebar() {
             })}
         </nav>
 
-        {/* User Profile & Logout */}
-        <div className="p-3 border-t border-white/5 bg-white/[0.01]">
-          <div className={`flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-            {sidebarOpen ? (
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative shrink-0">
-                  {user?.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user?.name || 'User'}
-                      className="w-8 h-8 rounded-lg object-cover border border-white/10"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white text-xs font-semibold shadow-md">
-                      {getInitials()}
-                    </div>
-                  )}
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-[#0F0F12]" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-white truncate">
-                    {user?.name || 'Workspace Member'}
-                  </p>
-                  <p className="text-[10px] text-gray-400 capitalize truncate">
-                    {user?.role || 'Member'}
-                  </p>
-                </div>
-              </div>
-            ) : null}
+        {/* Bottom Logout Area (Full button on mobile or desktop expanded, icon-only on desktop collapsed) */}
+        <div className="p-3 border-t border-white/[0.08] bg-white/[0.01]">
+          <div className={!sidebarOpen ? 'hidden md:block' : 'hidden'}>
+            <div className="relative group flex justify-center w-full">
+              <button
+                type="button"
+                onClick={() => setIsLogoutModalOpen(true)}
+                className="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 active:bg-rose-500/15 transition-all duration-200 border border-transparent hover:border-rose-500/20 cursor-pointer focus:outline-none"
+                aria-label="Log Out"
+              >
+                <FiLogOut size={19} className="shrink-0" />
+              </button>
 
+              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E293B]/95 backdrop-blur-xl text-rose-300 text-xs font-medium rounded-lg shadow-2xl border border-rose-500/25 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-200 z-50 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span>Log Out</span>
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#1E293B]" />
+              </div>
+            </div>
+          </div>
+
+          <div className={!sidebarOpen ? 'block md:hidden' : 'block'}>
             <button
-              onClick={handleLogout}
-              title="Sign Out"
-              className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+              type="button"
+              onClick={() => setIsLogoutModalOpen(true)}
+              className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 active:bg-rose-500/15 transition-all duration-200 border border-transparent hover:border-rose-500/20 cursor-pointer group focus:outline-none"
+              aria-label="Log Out"
             >
-              <FiLogOut size={16} />
+              <FiLogOut size={18} className="text-[#94A3B8] group-hover:text-rose-400 transition-colors shrink-0" />
+              <span className="text-sm font-medium tracking-wide">Log Out</span>
             </button>
           </div>
         </div>
       </aside>
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isLogoutModalOpen}
+        onClose={() => !isLoggingOut && setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+        title="Sign out of Automate AI?"
+        description="Are you sure you want to sign out of your account? Any active workspace session will end."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        variant="destructive"
+        loading={isLoggingOut}
+        icon={FiLogOut}
+      />
     </>
   );
 }

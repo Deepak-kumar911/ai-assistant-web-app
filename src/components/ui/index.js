@@ -15,3 +15,4 @@ export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState, Skeleton } from './LoadingState';
 export { ConfirmDialog } from './ConfirmDialog';
+export { default as CustomSelect } from './CustomSelect';

@@ -8,8 +8,8 @@ import { setToken, setRefreshToken } from '../utils/helperFunction';
 import { useDispatch } from 'react-redux';
 import { setSession } from '../stateManagement/slices/authSlice';
 import { loginApi, googleAuthApi } from '../api/authApi';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Button } from '../components/ui';
-import { Bot, Mail, Lock, LogIn } from 'lucide-react';
+import { Input } from '../components/ui';
+import { Bot, Mail, Lock, LogIn, Sparkles, Zap, ShieldCheck, MessageSquare, Loader2 } from 'lucide-react';
 import OtpVerificationScreen from '../components/auth/OtpVerificationScreen';
 
 const MotionDiv = motion.div;
@@ -122,69 +122,150 @@ const SignIn = () => {
   });
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#080C14] px-4 py-8 relative overflow-hidden">
-      {/* Subtle Background Glows */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#06B6D4]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#3B82F6]/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="flex min-h-screen w-full bg-[#080C14] text-[#F8FAFC] relative overflow-hidden font-sans">
+      {/* Dynamic Ambient Background Lights */}
+      <div className="fixed -top-48 -left-48 w-[32rem] h-[32rem] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="fixed -bottom-48 -right-48 w-[32rem] h-[32rem] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="fixed top-1/2 left-1/3 w-[24rem] h-[24rem] bg-cyan-600/5 rounded-full blur-[160px] pointer-events-none" />
 
-      <MotionDiv
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="flex justify-center mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-[#06B6D4]/15 border border-[#06B6D4]/30 text-[#06B6D4] shadow-lg shadow-[#06B6D4]/20">
-              <Bot className="w-8 h-8" />
+      {/* Responsive Split Screen Layout */}
+      <div className="relative z-10 flex flex-col lg:flex-row w-full min-h-screen">
+        
+        {/* Left Hero Column (Desktop & Tablet Landscape) */}
+        <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col justify-between p-8 xl:p-14 relative border-r border-white/5 bg-gradient-to-br from-[#080C14] via-[#0F172A]/70 to-[#080C14]">
+          {/* Subtle Grid Pattern Overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+            style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)', backgroundSize: '24px 24px' }} 
+          />
+
+          {/* Top Brand Header */}
+          <div className="relative z-10 flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shadow-lg shadow-cyan-500/20 backdrop-blur-md">
+              <Bot className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-[#F8FAFC]">AI-Assistant</h1>
-              <p className="text-xs text-[#94A3B8]">Autonomous Agent Platform</p>
+              <span className="text-xl font-bold tracking-tight text-white">AI-Assistant</span>
+              <p className="text-xs text-[#94A3B8]">Smart AI Assistants for Modern Teams</p>
             </div>
+          </div>
+
+          {/* Middle Value Proposition Card */}
+          <div className="relative z-10 my-auto py-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-cyan-300 font-medium mb-5 backdrop-blur-md">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>24/7 AI Customer Support</span>
+            </div>
+
+            <h2 className="text-3xl xl:text-4xl font-extrabold tracking-tight text-white leading-tight mb-4">
+              Automate Support,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-400">
+                Capture Leads, Grow Faster.
+              </span>
+            </h2>
+
+            <p className="text-sm xl:text-base text-[#94A3B8] leading-relaxed mb-8 max-w-lg">
+              Deploy intelligent AI assistants across your website and Instagram to chat with visitors, answer questions, and capture customer leads around the clock.
+            </p>
+
+            {/* Feature Highlights Grid */}
+            <div className="grid grid-cols-1 gap-3.5 max-w-md">
+              <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-slate-900/60 border border-white/5 backdrop-blur-md transition-all duration-200 hover:border-cyan-500/30">
+                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white">Instant Intelligent Replies</p>
+                  <p className="text-[11px] text-[#94A3B8]">Answer visitor questions instantly with accurate, helpful responses</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-slate-900/60 border border-white/5 backdrop-blur-md transition-all duration-200 hover:border-cyan-500/30">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white">Website & Instagram Chat</p>
+                  <p className="text-[11px] text-[#94A3B8]">Engage customers automatically in DMs and website live chat</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-slate-900/60 border border-white/5 backdrop-blur-md transition-all duration-200 hover:border-cyan-500/30">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white">Enterprise-Grade Security</p>
+                  <p className="text-[11px] text-[#94A3B8]">Your customer conversations and business data stay strictly private</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Operational Status */}
+          <div className="relative z-10 pt-4 border-t border-white/5 flex items-center gap-2 text-xs text-[#94A3B8]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>All systems operational</span>
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {unverifiedEmail ? (
-            <MotionDiv
-              key="otp-screen"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
-            >
-              <OtpVerificationScreen
-                email={unverifiedEmail}
-                onSuccess={handleOtpSuccess}
-                onBack={() => setUnverifiedEmail(null)}
-              />
-            </MotionDiv>
-          ) : (
-            <MotionDiv
-              key="signin-card"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card hover={false} glow className="border-white/10 shadow-2xl">
-                <CardHeader className="text-center pb-2">
-                  <CardTitle className="text-xl">Sign in to your account</CardTitle>
-                  <CardDescription>Enter your operator credentials to continue</CardDescription>
-                </CardHeader>
+        {/* Right Form Column (Interactive Auth Card) */}
+        <div className="flex-1 flex flex-col justify-center items-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto">
+          {/* Mobile Top Brand Header */}
+          <div className="lg:hidden flex items-center gap-3 mb-6 mt-4">
+            <div className="p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shadow-md shadow-cyan-500/15">
+              <Bot className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-lg font-bold text-white tracking-tight">AI-Assistant</span>
+              <p className="text-[11px] text-[#94A3B8]">Smart AI Assistants for Modern Teams</p>
+            </div>
+          </div>
 
-                <CardContent className="pt-4 space-y-4">
+          <div className="w-full max-w-[420px] relative">
+            <AnimatePresence mode="wait">
+              {unverifiedEmail ? (
+                <MotionDiv
+                  key="otp-screen"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <OtpVerificationScreen
+                    email={unverifiedEmail}
+                    onSuccess={handleOtpSuccess}
+                    onBack={() => setUnverifiedEmail(null)}
+                  />
+                </MotionDiv>
+              ) : (
+                <MotionDiv
+                  key="signin-card"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="relative rounded-2xl bg-[#0F172A]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-6 sm:p-8 overflow-hidden"
+                >
+                  {/* Subtle Top Cyan Accent Highlight */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+
+                  {/* Header Title */}
+                  <div className="text-center mb-6">
+                    <h1 className="text-2xl font-bold tracking-tight text-white mb-1.5">Welcome back</h1>
+                    <p className="text-xs sm:text-sm text-[#94A3B8]">
+                      Enter your email and password to access your dashboard
+                    </p>
+                  </div>
+
                   {/* Google OAuth Button */}
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    fullWidth
-                    loading={googleLoading}
                     onClick={handleGoogleAuth}
-                    className="border-white/10 hover:border-white/20 hover:bg-white/5 text-[#F8FAFC] py-2.5 font-medium transition-all"
+                    disabled={googleLoading}
+                    className="w-full h-11 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.02] border border-white/10 hover:border-white/20 text-[#F8FAFC] text-sm font-medium flex items-center justify-center gap-3 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080C14] disabled:opacity-60 disabled:cursor-not-allowed group shadow-sm"
                   >
-                    <svg className="w-4 h-4 mr-2.5 inline shrink-0" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24">
                       <path
                         fill="#4285F4"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -202,32 +283,35 @@ const SignIn = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                       />
                     </svg>
-                    Continue with Google
-                  </Button>
+                    <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
+                  </button>
 
-                  <div className="relative flex items-center justify-center">
-                    <div className="border-t border-white/10 w-full" />
-                    <span className="bg-[#0F172A] px-3 text-xs text-[#64748B] uppercase tracking-wider relative z-10">
+                  {/* Clean Centered Divider */}
+                  <div className="flex items-center my-5 w-full">
+                    <div className="flex-1 h-px bg-white/10" />
+                    <span className="px-3 text-xs text-[#94A3B8] font-medium tracking-wide">
                       or with email
                     </span>
+                    <div className="flex-1 h-px bg-white/10" />
                   </div>
 
+                  {/* Formik Form */}
                   <form onSubmit={formik.handleSubmit} className="space-y-4">
-                    {/* Email Field */}
+                    {/* Email Input */}
                     <Input
                       label="Email Address"
                       id="email"
                       name="email"
                       type="email"
                       icon={Mail}
-                      placeholder="operator@company.com"
+                      placeholder="you@company.com"
                       value={formik.values.email}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       error={formik.touched.email && formik.errors.email ? formik.errors.email : undefined}
                     />
 
-                    {/* Password Field */}
+                    {/* Password Input */}
                     <Input
                       label="Password"
                       id="password"
@@ -241,37 +325,37 @@ const SignIn = () => {
                       error={formik.touched.password && formik.errors.password ? formik.errors.password : undefined}
                     />
 
-                    {/* Submit Button */}
-                    <Button
+                    {/* Primary Submit Button with Gradient */}
+                    <button
                       type="submit"
-                      variant="primary"
-                      fullWidth
-                      loading={loading}
-                      icon={LogIn}
-                      className="mt-2"
+                      disabled={loading}
+                      className="w-full h-11 mt-2 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-400 text-slate-950 text-sm font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:opacity-95 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080C14] disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Sign In
-                    </Button>
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                      ) : (
+                        <LogIn className="w-4 h-4 text-slate-950" />
+                      )}
+                      <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+                    </button>
 
-                    {/* Footer Links */}
-                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#94A3B8]">
-                      <span>
-                        Don't have an account?{' '}
-                        <Link to="/sign-up" className="text-[#06B6D4] hover:underline font-medium">
-                          Sign Up
-                        </Link>
-                      </span>
-                      <Link to="/design-system" className="text-[#64748B] hover:text-[#94A3B8]">
-                        Design Tokens
+                    {/* Footer Navigation */}
+                    <div className="pt-4 border-t border-white/5 text-center text-xs text-[#94A3B8]">
+                      <span>Don't have an account?</span>{' '}
+                      <Link 
+                        to="/sign-up" 
+                        className="text-cyan-400 hover:text-cyan-300 font-medium hover:underline transition-colors ml-1"
+                      >
+                        Sign Up
                       </Link>
                     </div>
                   </form>
-                </CardContent>
-              </Card>
-            </MotionDiv>
-          )}
-        </AnimatePresence>
-      </MotionDiv>
+                </MotionDiv>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

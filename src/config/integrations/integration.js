@@ -1,7 +1,22 @@
-import { FiHome, FiPieChart, FiSettings, FiUsers, FiZap, FiCalendar, FiClock, FiBarChart2 } from "react-icons/fi";
+import {
+  FiHome,
+  FiPieChart,
+  FiSettings,
+  FiUsers,
+  FiZap,
+  FiCalendar,
+  FiClock,
+  FiBarChart2,
+  FiSliders,
+  FiMessageSquare,
+  FiInbox,
+} from "react-icons/fi";
 import InstagramOverView from "../../pages/integrations/instagram/OverView";
 import WhatsAppOverView from "../../pages/integrations/whatsapp/OverView";
+import WebOverView from "../../pages/integrations/web/OverView";
 import WebIntegration from "../../components/integration/WebIntegration";
+import ChatInbox from "../../pages/inbox/ChatInbox";
+import TaskResponseCenter from "../../pages/tasks/TaskResponseCenter";
 import InstagramAuth from "../../pages/integrations/instagram/InstagramAuth";
 import InstagramPublisher from "../../pages/integrations/instagram/publish/InstagramPublisher";
 import PostScheduler from "../../pages/integrations/instagram/PostScheduler";
@@ -40,10 +55,19 @@ export const integrationConfigs = {
   website: {
     name: "Website",
     sidebar: [
-      { path: "overview", isSidebar: true, label: "Overview", icon: FiHome, iconSize: 20, component: WebIntegration },
-      { path: "connect", isSidebar: true, label: "Widget Customizer", icon: FiPieChart, iconSize: 20, component: WebIntegration },
-      { path: "templates", isSidebar: true, label: "Templates", icon: FiUsers, iconSize: 20 },
-      { path: "automation", isSidebar: true, label: "Automation", icon: FiSettings, iconSize: 20 },
+      { path: "overview", isSidebar: true, label: "Overview", icon: FiHome, iconSize: 18, component: WebOverView },
+      { path: "widget", isSidebar: true, label: "Widget Customizer", icon: FiSliders, iconSize: 18, component: WebIntegration },
+      { path: "inbox", isSidebar: true, label: "Inbox", icon: FiMessageSquare, iconSize: 18, component: ChatInbox },
+      { path: "form-responses", isSidebar: true, label: "Form Responses", icon: FiInbox, iconSize: 18, component: TaskResponseCenter },
+
+      // Non-sidebar sub-routes and backward-compatible aliases
+      { path: "connect", isSidebar: false, label: "Widget Customizer", component: WebIntegration },
+      { path: "customizer", isSidebar: false, label: "Widget Customizer", component: WebIntegration },
+      { path: "chat-inbox", isSidebar: false, label: "Inbox", component: ChatInbox },
+      { path: "responses", isSidebar: false, label: "Form Responses", component: TaskResponseCenter },
+      { path: "tasks", isSidebar: false, label: "Form Responses", component: TaskResponseCenter },
+      { path: "task-responses", isSidebar: false, label: "Form Responses", component: TaskResponseCenter },
     ],
   },
 };
+

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   FiInbox,
   FiFilter,
@@ -32,7 +34,7 @@ import {
   exportSubmissionsCsvApi,
 } from "../../api/task/taskSubmissionApi";
 import { getApiWithToken } from "../../api/apiInterface";
-import { EmptyState, ErrorState, Skeleton } from "../../components/ui";
+import { EmptyState, ErrorState, Skeleton, CustomSelect } from "../../components/ui";
 
 const STATUS_CONFIG = {
   new: {
@@ -92,7 +94,39 @@ const PLATFORM_CONFIG = {
   },
 };
 
-export default function TaskResponseCenter() {
+export default function TaskResponseCenter({
+  fixedPlatform,
+  fixedAgentId,
+  hidePlatformFilter,
+  hideAgentFilter,
+}) {
+  const routeParams = useParams();
+  const integrationDetails = useSelector((state) => state?.integration?.details);
+  const resolvedIntegrationAgentId =
+    (integrationDetails?.aiAgentId?._id || integrationDetails?.aiAgentId)?.toString() || null;
+
+  // Detect whether we are scoped inside an integration (e.g. Website Automation)
+  const isWebsiteScope =
+    fixedPlatform === "website" || routeParams?.platform === "website";
+
+  const effectivePlatform =
+    fixedPlatform || (routeParams?.platform ? routeParams.platform : "all");
+
+  const effectiveAgentId =
+    fixedAgentId ||
+    resolvedIntegrationAgentId ||
+    (routeParams?.agentId ? routeParams.agentId : "all");
+
+  const shouldHidePlatform =
+    hidePlatformFilter !== undefined
+      ? hidePlatformFilter
+      : Boolean(routeParams?.platform || fixedPlatform);
+
+  const shouldHideAgent =
+    hideAgentFilter !== undefined
+      ? hideAgentFilter
+      : Boolean(routeParams?.platformId || fixedAgentId);
+
   const [submissions, setSubmissions] = useState([]);
   const [agents, setAgents] = useState([]);
   const [stats, setStats] = useState({
@@ -113,11 +147,13 @@ export default function TaskResponseCenter() {
 
   // Filter states
   const [search, setSearch] = useState("");
-  const [selectedAgent, setSelectedAgent] = useState("all");
-  const [selectedPlatform, setSelectedPlatform] = useState("all");
+  const [selectedAgent, setSelectedAgent] = useState(effectiveAgentId);
+  const [selectedPlatform, setSelectedPlatform] = useState(effectivePlatform);
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedTaskType, setSelectedTaskType] = useState("all");
   const [dateRange, setDateRange] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -128,34 +164,83 @@ export default function TaskResponseCenter() {
   const [statusInput, setStatusInput] = useState("new");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Load agents for filter dropdown
+  // Sync state if route parameters or props change
   useEffect(() => {
-    getApiWithToken("ai-agent/all")
-      .then((res) => {
-        if (res.data?.data) {
-          setAgents(res.data.data);
-        }
-      })
-      .catch((err) => console.error("Failed to load agents", err));
-  }, []);
+    if (effectivePlatform) setSelectedPlatform(effectivePlatform);
+    if (effectiveAgentId) setSelectedAgent(effectiveAgentId);
+  }, [effectivePlatform, effectiveAgentId]);
+
+  // Load agents for filter dropdown if not hidden
+  useEffect(() => {
+    if (!shouldHideAgent) {
+      getApiWithToken("ai-agent/all")
+        .then((res) => {
+          if (res.data?.data) {
+            setAgents(res.data.data);
+          }
+        })
+        .catch((err) => console.error("Failed to load agents", err));
+    }
+  }, [shouldHideAgent]);
 
   // Compute date filters
   const getDateParams = useCallback(() => {
     const now = new Date();
     if (dateRange === "today") {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return { startDate: start.toISOString() };
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      return {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      };
     }
-    if (dateRange === "7days") {
+    if (dateRange === "yesterday") {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+      return {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      };
+    }
+    if (dateRange === "last_week") {
       const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return { startDate: start.toISOString() };
+      start.setHours(0, 0, 0, 0);
+      return {
+        startDate: start.toISOString(),
+        endDate: now.toISOString(),
+      };
     }
-    if (dateRange === "30days") {
-      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return { startDate: start.toISOString() };
+    if (dateRange === "this_month") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return {
+        startDate: start.toISOString(),
+        endDate: now.toISOString(),
+      };
+    }
+    if (dateRange === "last_month") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      };
+    }
+    if (dateRange === "custom") {
+      const params = {};
+      if (customStartDate) {
+        const start = new Date(customStartDate);
+        start.setHours(0, 0, 0, 0);
+        params.startDate = start.toISOString();
+      }
+      if (customEndDate) {
+        const end = new Date(customEndDate);
+        end.setHours(23, 59, 59, 999);
+        params.endDate = end.toISOString();
+      }
+      return params;
     }
     return {};
-  }, [dateRange]);
+  }, [dateRange, customStartDate, customEndDate]);
 
   // Fetch submissions from API
   const fetchSubmissions = useCallback(async () => {
@@ -288,28 +373,36 @@ export default function TaskResponseCenter() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-              <FiInbox size={22} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Task Response Center
-              </h1>
-              <p className="text-sm text-gray-400">
-                Unified visibility, analytics, and status tracking for captured form leads and bookings
-              </p>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 shadow-sm mt-0.5 sm:mt-0">
+            <FiInbox size={22} className="shrink-0" />
+          </div>
+          <div className="min-w-0 flex-1">
+            {isWebsiteScope && (
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="shrink-0 whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  Website Automation
+                </span>
+                <span className="text-xs text-gray-500 whitespace-nowrap">• Visitor Submissions</span>
+              </div>
+            )}
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {isWebsiteScope ? "Website Form & Task Responses" : "Task Response Center"}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+              {isWebsiteScope
+                ? "Visitor inquiries, lead captures, and appointment bookings submitted through your website widget"
+                : "Unified visibility, analytics, and status tracking for captured form leads and bookings"}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={fetchSubmissions}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium border border-white/10 transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium border border-white/10 transition-colors cursor-pointer"
           >
             <FiRefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-cyan-400" : ""}`} />
             <span>Refresh</span>
@@ -318,7 +411,7 @@ export default function TaskResponseCenter() {
           <button
             onClick={handleExportCsv}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/20 transition-all duration-200"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white text-sm font-medium shadow-lg shadow-cyan-500/20 transition-all duration-200 cursor-pointer"
           >
             <FiDownload className={`w-4 h-4 ${exporting ? "animate-bounce" : ""}`} />
             <span>{exporting ? "Exporting..." : "Export CSV"}</span>
@@ -327,7 +420,7 @@ export default function TaskResponseCenter() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <motion.div
           whileHover={{ y: -2 }}
           className="p-5 rounded-2xl bg-[#13131A] border border-white/5 shadow-xl relative overflow-hidden group"
@@ -335,17 +428,17 @@ export default function TaskResponseCenter() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-              Total Submissions
+              Total Responses
             </span>
             <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
-              <FiTrendingUp size={16} />
+              <FiInbox size={16} />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-bold text-white">{stats.total}</span>
-            <span className="text-xs text-gray-400">records</span>
+            <span className="text-xs text-gray-400">across forms</span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-3">
+          <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
             <span>Forms: {stats.byType?.form || 0}</span>
             <span>•</span>
             <span>Bookings: {stats.byType?.booking || 0}</span>
@@ -414,18 +507,26 @@ export default function TaskResponseCenter() {
             <span className="text-xs text-gray-400">completed</span>
           </div>
           <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
-            <span>Website: {stats.byPlatform?.website || 0}</span>
-            <span>•</span>
-            <span>Instagram: {stats.byPlatform?.instagram || 0}</span>
+            {isWebsiteScope ? (
+              <span className="text-cyan-400 flex items-center gap-1">
+                <FiGlobe size={12} /> Website Leads: {stats.byPlatform?.website || stats.total || 0}
+              </span>
+            ) : (
+              <>
+                <span>Website: {stats.byPlatform?.website || 0}</span>
+                <span>•</span>
+                <span>Instagram: {stats.byPlatform?.instagram || 0}</span>
+              </>
+            )}
           </div>
         </motion.div>
       </div>
 
       {/* Filter and Control Bar */}
-      <div className="p-4 rounded-2xl bg-[#13131A] border border-white/5 space-y-4">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-[#13131A] border border-white/5 space-y-3 sm:space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
           {/* Search Box */}
-          <div className="md:col-span-4 relative">
+          <div className={`${shouldHideAgent ? 'md:col-span-6' : 'md:col-span-4'} relative`}>
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
             <input
               type="text"
@@ -436,87 +537,150 @@ export default function TaskResponseCenter() {
             />
           </div>
 
-          {/* Agent Filter */}
-          <div className="md:col-span-3">
-            <select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-            >
-              <option value="all" className="bg-[#13131A] text-gray-300">
-                All AI Agents
-              </option>
-              {agents.map((agent) => (
-                <option key={agent._id} value={agent._id} className="bg-[#13131A] text-white">
-                  {agent.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Agent Filter (Hidden when scoped to website agent) */}
+          {!shouldHideAgent && (
+            <div className="md:col-span-3">
+              <CustomSelect
+                value={selectedAgent}
+                onChange={setSelectedAgent}
+                options={[
+                  { value: "all", label: "All AI Agents" },
+                  ...agents.map((agent) => ({
+                    value: agent._id,
+                    label: agent.name,
+                  })),
+                ]}
+                placeholder="Select AI Agent"
+                icon={FiUser}
+              />
+            </div>
+          )}
 
           {/* Status Filter */}
-          <div className="md:col-span-2">
-            <select
+          <div className={`${shouldHideAgent ? "md:col-span-3" : "md:col-span-2"}`}>
+            <CustomSelect
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-            >
-              <option value="all" className="bg-[#13131A] text-gray-300">All Statuses</option>
-              <option value="new" className="bg-[#13131A] text-cyan-400">New</option>
-              <option value="contacted" className="bg-[#13131A] text-amber-400">Contacted</option>
-              <option value="reviewed" className="bg-[#13131A] text-emerald-400">Reviewed</option>
-              <option value="archived" className="bg-[#13131A] text-gray-400">Archived</option>
-            </select>
+              onChange={setSelectedStatus}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "new", label: "New", dot: "bg-cyan-400" },
+                { value: "contacted", label: "Contacted", dot: "bg-amber-400" },
+                { value: "reviewed", label: "Reviewed", dot: "bg-emerald-400" },
+                { value: "archived", label: "Archived", dot: "bg-gray-400" },
+              ]}
+              placeholder="Filter Status"
+              icon={FiTag}
+            />
           </div>
 
           {/* Date Filter */}
           <div className="md:col-span-3">
-            <select
+            <CustomSelect
               value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-            >
-              <option value="all" className="bg-[#13131A] text-gray-300">All Time</option>
-              <option value="today" className="bg-[#13131A] text-gray-300">Today</option>
-              <option value="7days" className="bg-[#13131A] text-gray-300">Last 7 Days</option>
-              <option value="30days" className="bg-[#13131A] text-gray-300">Last 30 Days</option>
-            </select>
+              onChange={setDateRange}
+              options={[
+                { value: "all", label: "All Time" },
+                { value: "today", label: "Today" },
+                { value: "yesterday", label: "Yesterday" },
+                { value: "last_week", label: "Last Week" },
+                { value: "this_month", label: "This Month" },
+                { value: "last_month", label: "Last Month" },
+                { value: "custom", label: "Custom Date Selection..." },
+              ]}
+              placeholder="Filter Date"
+              icon={FiCalendar}
+            />
           </div>
         </div>
 
-        {/* Channel & Task Type Quick Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
-          {/* Platform Pills */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs text-gray-500 mr-1 font-medium">Channel:</span>
-            {[
-              { id: "all", label: "All Channels" },
-              { id: "website", label: "Website", icon: FiGlobe },
-              { id: "instagram", label: "Instagram", icon: FiInstagram },
-              { id: "whatsapp", label: "WhatsApp", icon: FiMessageSquare },
-            ].map((p) => {
-              const active = selectedPlatform === p.id;
-              const Icon = p.icon;
-              return (
+        {/* Custom Date Range Selector (Shown when 'custom' is selected) */}
+        <AnimatePresence>
+          {dateRange === "custom" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/5 overflow-hidden"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 font-medium">Start Date:</span>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500/50 [color-scheme:dark] transition-colors cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 font-medium">End Date:</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500/50 [color-scheme:dark] transition-colors cursor-pointer"
+                />
+              </div>
+
+              {(customStartDate || customEndDate) && (
                 <button
-                  key={p.id}
-                  onClick={() => setSelectedPlatform(p.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                    active
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                      : "bg-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10 border border-transparent"
-                  }`}
+                  type="button"
+                  onClick={() => {
+                    setCustomStartDate("");
+                    setCustomEndDate("");
+                  }}
+                  className="text-xs text-gray-400 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  {Icon && <Icon size={12} />}
-                  <span>{p.label}</span>
+                  Clear Custom Dates
                 </button>
-              );
-            })}
-          </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Channel & Task Type Quick Pills */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-white/5">
+          {/* Platform Pills (Hidden when scoped to website) */}
+          {!shouldHidePlatform ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-gray-400 mr-1 font-medium shrink-0">Channel:</span>
+              {[
+                { id: "all", label: "All Channels" },
+                { id: "website", label: "Website", icon: FiGlobe },
+                { id: "instagram", label: "Instagram", icon: FiInstagram },
+                { id: "whatsapp", label: "WhatsApp", icon: FiMessageSquare },
+              ].map((p) => {
+                const active = selectedPlatform === p.id;
+                const Icon = p.icon;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedPlatform(p.id)}
+                    className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                      active
+                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold"
+                        : "bg-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10 border border-transparent"
+                    }`}
+                  >
+                    {Icon && <Icon size={12} className="shrink-0" />}
+                    <span>{p.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="shrink-0 whitespace-nowrap text-xs px-3 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center gap-1.5 font-medium">
+                <FiGlobe size={13} className="shrink-0" />
+                <span>Channel: Website Widget</span>
+              </span>
+            </div>
+          )}
 
           {/* Task Type Pills */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-500 mr-1 font-medium">Type:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-gray-400 mr-1 font-medium shrink-0">Type:</span>
             {[
               { id: "all", label: "All Types" },
               { id: "form", label: "Forms / Leads" },
@@ -527,9 +691,9 @@ export default function TaskResponseCenter() {
                 <button
                   key={t.id}
                   onClick={() => setSelectedTaskType(t.id)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                  className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                     active
-                      ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
+                      ? "bg-violet-500/20 text-violet-400 border border-violet-500/30 font-semibold"
                       : "bg-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10 border border-transparent"
                   }`}
                 >
@@ -541,9 +705,80 @@ export default function TaskResponseCenter() {
         </div>
       </div>
 
-      {/* Submissions Table Area */}
+      {/* Submissions Area */}
       <div className="bg-[#13131A] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto custom-scrollbar">
+        {/* Mobile Submissions Cards (< md) */}
+        <div className="block md:hidden divide-y divide-white/5">
+          {loading ? (
+            [1, 2, 3].map((i) => (
+              <div key={i} className="p-4 space-y-3 animate-pulse">
+                <Skeleton width="60%" height="16px" />
+                <Skeleton width="40%" height="14px" />
+                <Skeleton width="30%" height="20px" variant="rectangular" />
+              </div>
+            ))
+          ) : submissions.length === 0 ? (
+            <div className="p-6">
+              <EmptyState
+                title="No submissions found"
+                description="Try resetting your search query or filters."
+                compact
+              />
+            </div>
+          ) : (
+            submissions.map((sub) => {
+              const statusConf = STATUS_CONFIG[sub.status] || STATUS_CONFIG.new;
+              const platformConf = PLATFORM_CONFIG[sub.platform] || PLATFORM_CONFIG.website;
+              const PlatformIcon = platformConf.icon;
+              const contactName =
+                sub.contact?.name ||
+                sub.submittedData?.full_name ||
+                sub.submittedData?.name ||
+                "Anonymous";
+              const contactEmail = sub.contact?.email || sub.submittedData?.email || "";
+              const contactPhone = sub.contact?.phone || sub.submittedData?.phone || "";
+
+              return (
+                <div
+                  key={sub._id}
+                  onClick={() => openDetail(sub)}
+                  className="p-4 hover:bg-white/[0.03] transition-colors cursor-pointer space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-white/10 flex items-center justify-center text-cyan-400 font-semibold text-xs shrink-0">
+                        {contactName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-white text-sm truncate">{contactName}</div>
+                        <div className="text-xs text-gray-400 truncate">{contactEmail || contactPhone || "No direct contact info"}</div>
+                      </div>
+                    </div>
+
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium border shrink-0 ${statusConf.bg} ${statusConf.text} ${statusConf.border}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`} />
+                      <span>{statusConf.label}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between text-xs text-gray-400 pt-1 gap-2 border-t border-white/5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-300 font-medium">{sub.taskId?.name || "Form Task"}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${sub.taskType === "booking" ? "bg-violet-500/20 text-violet-300" : "bg-cyan-500/20 text-cyan-300"}`}>
+                        {sub.taskType === "booking" ? "Booking" : "Lead"}
+                      </span>
+                    </div>
+
+                    <span className="text-[11px] text-gray-500 whitespace-nowrap">{formatDate(sub.createdAt)}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop / Tablet Submissions Table (>= md) */}
+        <div className="hidden md:block overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.02] text-xs font-semibold uppercase tracking-wider text-gray-400">
@@ -752,30 +987,30 @@ export default function TaskResponseCenter() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl h-full bg-[#0F0F12] border-l border-white/10 shadow-2xl flex flex-col z-10 overflow-hidden"
+              className="relative w-full max-w-full sm:max-w-xl h-full bg-[#0F0F12] border-l border-white/10 shadow-2xl flex flex-col z-10 overflow-hidden"
             >
               {/* Drawer Header */}
-              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+              <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
                     <FiInbox size={20} />
                   </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-white">Submission Details</h2>
-                    <p className="text-xs text-gray-400">ID: {selectedSubmission._id}</p>
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-lg font-bold text-white truncate">Submission Details</h2>
+                    <p className="text-xs text-gray-400 truncate">ID: {selectedSubmission._id}</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 >
                   <FiX size={18} />
                 </button>
               </div>
 
               {/* Drawer Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-5 sm:space-y-6">
                 {/* Contact Overview Card */}
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 space-y-3">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
@@ -858,17 +1093,18 @@ export default function TaskResponseCenter() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Change Status</label>
-                    <select
+                    <label className="text-xs text-gray-400 block mb-1.5 font-medium">Change Status</label>
+                    <CustomSelect
                       value={statusInput}
-                      onChange={(e) => setStatusInput(e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500/50"
-                    >
-                      <option value="new">New (Unreviewed)</option>
-                      <option value="contacted">Contacted (In Progress)</option>
-                      <option value="reviewed">Reviewed (Completed)</option>
-                      <option value="archived">Archived</option>
-                    </select>
+                      onChange={setStatusInput}
+                      options={[
+                        { value: "new", label: "New (Unreviewed)", dot: "bg-cyan-400" },
+                        { value: "contacted", label: "Contacted (In Progress)", dot: "bg-amber-400" },
+                        { value: "reviewed", label: "Reviewed (Completed)", dot: "bg-emerald-400" },
+                        { value: "archived", label: "Archived", dot: "bg-gray-400" },
+                      ]}
+                      placeholder="Select status"
+                    />
                   </div>
 
                   <div>

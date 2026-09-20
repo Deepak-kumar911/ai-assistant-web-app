@@ -120,59 +120,83 @@ export default function IntegrationTab({ agentId }) {
 
   return (
     <>
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
         {/* Header Stats */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-2xl font-bold text-white">{stats.total}</p>
-            <p className="text-xs text-gray-400">Total Integrations</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0F172A]/70 border border-white/10 backdrop-blur-xl shadow-lg flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-black text-[#F8FAFC] tracking-tight">{stats.total}</p>
+              <p className="text-xs text-[#94A3B8] font-medium mt-0.5">Total Channels</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#94A3B8]">
+              <FiLink size={18} />
+            </div>
           </div>
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-2xl font-bold text-emerald-400">{stats.connected}</p>
-            <p className="text-xs text-gray-400">Connected</p>
+
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0F172A]/70 border border-white/10 backdrop-blur-xl shadow-lg flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-black text-emerald-400 tracking-tight">{stats.connected}</p>
+              <p className="text-xs text-[#94A3B8] font-medium mt-0.5">Connected & Live</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <FiCheckCircle size={18} />
+            </div>
           </div>
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-2xl font-bold text-cyan-400">{stats.active}</p>
-            <p className="text-xs text-gray-400">Active</p>
+
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0F172A]/70 border border-white/10 backdrop-blur-xl shadow-lg flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-black text-cyan-400 tracking-tight">{stats.active}</p>
+              <p className="text-xs text-[#94A3B8] font-medium mt-0.5">Active Automation</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <FiTrendingUp size={18} />
+            </div>
           </div>
         </div>
 
-        {/* Add Integration Button */}
-        <div className="md:flex justify-between items-center">
+        {/* Header Bar & Add Integration Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
           <div>
-            <h3 className="text-lg font-semibold text-white">Connected Platforms</h3>
-            <p className="text-sm text-gray-400">Manage your connected integrations</p>
+            <h3 className="text-sm sm:text-base font-bold text-[#F8FAFC]">Connected Platforms</h3>
+            <p className="text-xs text-[#94A3B8] mt-0.5">
+              Connect external messaging platforms and omnichannel web widgets to your autonomous agent.
+            </p>
           </div>
           <button
+            type="button"
             onClick={() => setIsOpen(true)}
-            className="flex items-center mt-3 md:mt-0 gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl text-white text-sm font-medium hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-[#080C14] shadow-[0_0_14px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95 transition-all cursor-pointer shrink-0"
           >
             <FiPlus size={16} />
-            Add Integration
+            <span>Add Integration</span>
           </button>
         </div>
 
         {/* Integrations Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <Loader />
           </div>
         ) : list.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-16 text-center"
+            className="flex flex-col items-center justify-center py-16 text-center rounded-2xl bg-white/[0.02] border border-white/[0.06] p-6"
           >
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center mb-4">
-              <FiLink size={32} className="text-gray-500" />
+            <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4 text-cyan-400">
+              <FiLink size={28} />
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">No integrations yet</h4>
-            <p className="text-sm text-gray-400 mb-6">Connect your first platform to get started</p>
+            <h4 className="text-sm sm:text-base font-bold text-[#F8FAFC] mb-1">No integrations connected yet</h4>
+            <p className="text-xs text-[#94A3B8] mb-5 max-w-sm">
+              Link your WhatsApp, Instagram, Website, or CRM platforms to empower your AI assistant to handle live inquiries.
+            </p>
             <button
+              type="button"
               onClick={() => setIsOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl text-white font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 text-[#080C14] shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer"
             >
-              Add Integration
+              <FiPlus size={15} />
+              <span>Connect Platform</span>
             </button>
           </motion.div>
         ) : (
@@ -203,142 +227,144 @@ export default function IntegrationTab({ agentId }) {
               return (
                 <motion.div
                   key={item._id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ y: -4 }}
+                  transition={{ delay: idx * 0.04 }}
                   onClick={handleCardClick}
-                  className={`group relative p-4 bg-[#0F0F12] border rounded-2xl text-left transition-all cursor-pointer ${
+                  className={`group relative p-5 rounded-2xl bg-[#0F172A]/70 border backdrop-blur-xl text-left transition-all duration-200 cursor-pointer shadow-lg flex flex-col justify-between ${
                     isConnected
-                      ? 'border-white/10 hover:border-white/20'
-                      : 'border-amber-500/30 hover:border-amber-500/50 bg-amber-500/[0.02]'
+                      ? 'border-white/10 hover:border-white/20 hover:shadow-cyan-500/5'
+                      : 'border-amber-500/30 hover:border-amber-500/50 bg-amber-500/[0.03]'
                   }`}
                 >
-                  {/* Top Right: Status Badge & 3-Dot Menu */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {integrationIcons(item?.type)}
-                    </div>
+                  <div>
+                    {/* Top Right: Status Badge & 3-Dot Menu */}
+                    <div className="flex items-center justify-between mb-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform shadow-inner">
+                        {integrationIcons(item?.type)}
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      {/* Status Badge */}
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        isConnected
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : effectiveStatus === 'expired'
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                      }`}>
-                        {isConnected ? (
-                          <>
-                            <FiCheckCircle size={11} className="text-emerald-400" />
-                            <span>Connected</span>
-                          </>
-                        ) : (
-                          <>
-                            <FiAlertCircle size={11} className={effectiveStatus === 'expired' ? 'text-amber-400' : 'text-rose-400'} />
-                            <span>Needs Attention</span>
-                          </>
-                        )}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {/* Status Badge */}
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                          isConnected
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : effectiveStatus === 'expired'
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        }`}>
+                          {isConnected ? (
+                            <>
+                              <FiCheckCircle size={10} className="text-emerald-400" />
+                              <span>Connected</span>
+                            </>
+                          ) : (
+                            <>
+                              <FiAlertCircle size={10} className={effectiveStatus === 'expired' ? 'text-amber-400' : 'text-rose-400'} />
+                              <span>Attention</span>
+                            </>
+                          )}
+                        </span>
 
-                      {/* 3-Dot (Kebab) Menu Button */}
-                      <div className="relative integration-card-menu">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuId(activeMenuId === item._id ? null : item._id);
-                          }}
-                          className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                          title="More actions"
-                        >
-                          <FiMoreVertical size={16} />
-                        </button>
+                        {/* 3-Dot Menu Button */}
+                        <div className="relative integration-card-menu">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(activeMenuId === item._id ? null : item._id);
+                            }}
+                            className="p-1 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                            title="More actions"
+                          >
+                            <FiMoreVertical size={16} />
+                          </button>
 
-                        {/* Dropdown Menu */}
-                        <AnimatePresence>
-                          {activeMenuId === item._id && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                              transition={{ duration: 0.15 }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute right-0 mt-1 w-48 py-1.5 bg-[#121217] border border-white/10 rounded-xl shadow-2xl z-30 backdrop-blur-xl"
-                            >
-                              <button
-                                type="button"
-                                onClick={() => handleReconnect(item)}
-                                disabled={reconnectingId === item._id}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-white/5 transition-colors"
+                          {/* Dropdown Menu */}
+                          <AnimatePresence>
+                            {activeMenuId === item._id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                                transition={{ duration: 0.15 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 mt-1 w-48 py-1.5 bg-[#131D31]/95 border border-white/15 rounded-xl shadow-2xl z-30 backdrop-blur-2xl"
                               >
-                                <FiRefreshCw size={13} className={reconnectingId === item._id ? "animate-spin" : ""} />
-                                <span>Reconnect Account</span>
-                              </button>
-                              {isConnected && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleReconnect(item)}
+                                  disabled={reconnectingId === item._id}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-amber-400 hover:text-amber-300 hover:bg-white/5 transition-colors cursor-pointer"
+                                >
+                                  <FiRefreshCw size={13} className={reconnectingId === item._id ? "animate-spin" : ""} />
+                                  <span>Reconnect Account</span>
+                                </button>
+                                {isConnected && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveMenuId(null);
+                                      navigate(`/ai-agent/integration/${item?._id}/${item.type}/overview`);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#CBD5E1] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                                  >
+                                    <FiExternalLink size={13} />
+                                    <span>Manage Platform</span>
+                                  </button>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => {
+                                    fetchInstagramHealth();
+                                    fetchList();
                                     setActiveMenuId(null);
-                                    navigate(`/ai-agent/integration/${item?._id}/${item.type}/overview`);
+                                    toast.success("Health status refreshed");
                                   }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                                 >
-                                  <FiExternalLink size={13} />
-                                  <span>Manage Platform</span>
+                                  <FiTrendingUp size={13} />
+                                  <span>Refresh Status</span>
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  fetchInstagramHealth();
-                                  fetchList();
-                                  setActiveMenuId(null);
-                                  toast.success("Health status refreshed");
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                              >
-                                <FiTrendingUp size={13} />
-                                <span>Refresh Status</span>
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Info */}
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-[#F8FAFC] mb-1 flex items-center gap-2">
+                        <span>{platform?.name || item?.type || 'Integration'}</span>
+                        {isInstagram && instagramHealth?.username && (
+                          <span className="text-[11px] font-normal text-[#94A3B8] truncate max-w-[120px]">
+                            @{instagramHealth.username}
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-[#94A3B8] line-clamp-2 leading-relaxed">
+                        {!isConnected && isInstagram
+                          ? (instagramHealth?.statusReason || 'Connection issue detected. Reconnect to resume automation.')
+                          : (item?.description || `Manage and route your connected ${platform?.name || item?.type} conversations`)}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Info */}
-                  <div>
-                    <h4 className="font-semibold text-white mb-1 flex items-center gap-2">
-                      <span>{platform?.name || item?.type || 'Integration'}</span>
-                      {isInstagram && instagramHealth?.username && (
-                        <span className="text-[11px] font-normal text-gray-400 truncate max-w-[120px]">
-                          @{instagramHealth.username}
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-gray-500 line-clamp-2">
-                      {!isConnected && isInstagram
-                        ? (instagramHealth?.statusReason || 'Connection issue detected. Reconnect to resume automation.')
-                        : (item?.description || `Manage your connected ${platform?.name || item?.type} account`)}
-                    </p>
-                  </div>
-
-                  {/* Hover or Unhealthy Notice */}
-                  {!isConnected && isInstagram ? (
-                    <div className="mt-3 flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+                  {/* Card Bottom CTA hint */}
+                  <div className="mt-4 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                    {!isConnected && isInstagram ? (
+                      <span className="text-amber-400 font-medium flex items-center gap-1">
                         <FiAlertTriangle size={12} />
-                        Click 3-dot menu to reconnect
+                        Reconnect needed
                       </span>
-                    </div>
-                  ) : (
-                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <FiTrendingUp size={14} className="text-cyan-400" />
-                    </div>
-                  )}
+                    ) : (
+                      <span className="text-cyan-400/80 group-hover:text-cyan-300 font-semibold flex items-center gap-1">
+                        <span>Configure channel</span>
+                        <span className="transform group-hover:translate-x-0.5 transition-transform">→</span>
+                      </span>
+                    )}
+                  </div>
                 </motion.div>
               );
             })}

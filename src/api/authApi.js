@@ -1,4 +1,4 @@
-import { getApiWithToken, postApiWithToken, postApiWithoutToken } from "./apiInterface";
+import { getApiWithToken, postApiWithToken, postApiWithoutToken, deleteApiWithToken } from "./apiInterface";
 
 // Auth & Session endpoints (Task 35 & 36, TRD §2.1, §3.1)
 export const loginApi = (payload) => {
@@ -43,6 +43,14 @@ export const getAiAgentByIdApi = (id) => {
 
 export const updateAgentInfoApi = (payload) => {
     return postApiWithToken(`ai-agent/updateAgentInfo`, payload);
+};
+
+export const updateAgentStatusApi = (payload) => {
+    return postApiWithToken(`ai-agent/updateStatus`, payload);
+};
+
+export const deleteAiAgentApi = (agentId) => {
+    return postApiWithToken(`ai-agent/updateStatus`, { agentId, status: "delete" });
 };
 
 export const createAiAgentApi = (payload) => {

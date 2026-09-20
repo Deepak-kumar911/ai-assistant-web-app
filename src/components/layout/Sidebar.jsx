@@ -1,23 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   FiGrid,
   FiCpu,
-  FiZap,
-  FiInbox,
   FiMessageSquare,
   FiUsers,
-  FiBarChart2,
   FiSettings,
   FiChevronLeft,
   FiChevronRight,
-  FiChevronDown,
   FiLogOut,
-  FiCalendar,
-  FiClock,
+  FiInbox,
   FiX,
 } from 'react-icons/fi';
-import { FaInstagram } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar, closeMobileSidebar } from '../../stateManagement/slices/uiSlice';
 import { logout } from '../../stateManagement/slices/authSlice';
@@ -26,30 +20,18 @@ import { clearAuthTokens } from '../../utils/helperFunction';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SiGooglegemini } from 'react-icons/si';
 import AccountSwitcher from './AccountSwitcher';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
-// Primary workspace navigation
+// Primary workspace navigation - clean, user-friendly names, no badges/counts
 const mainNavItems = [
   { url: '/dashboard', icon: FiGrid, text: 'Dashboard' },
-  { url: '/ai-agent', icon: FiCpu, text: 'AI Agents', badge: '3' },
-  { url: '/inbox', icon: FiMessageSquare, text: 'Chat & DMs' },
+  { url: '/ai-agent', icon: FiCpu, text: 'AI Agents' },
+  { url: '/inbox', icon: FiMessageSquare, text: 'Inbox' },
+  { url: '/tasks', icon: FiInbox, text: 'Form Responses' },
 ];
-
-// Reorganized Instagram parent section with plain, business-friendly sub-items (Task 45)
-const instagramNav = {
-  id: 'instagram',
-  title: 'Instagram Automation',
-  icon: FaInstagram,
-  items: [
-    { url: '/workflows', icon: FiZap, text: 'Comments & Workflows' },
-    { url: '/scheduler', icon: FiCalendar, text: 'Post Scheduler' },
-    { url: '/post-scheduler', icon: FiClock, text: 'Scheduled Posts' },
-    { url: '/analytics', icon: FiBarChart2, text: 'Insights & Analytics' },
-  ],
-};
 
 // Workspace utilities
 const secondaryNavItems = [
-  { url: '/tasks', icon: FiInbox, text: 'Form Responses' },
   { url: '/team', icon: FiUsers, text: 'Team' },
   { url: '/settings', icon: FiSettings, text: 'Settings' },
 ];
@@ -57,26 +39,11 @@ const secondaryNavItems = [
 export default function Sidebar() {
   const dispatch = useDispatch();
   const { sidebarOpen, mobileSidebarOpen } = useSelector((state) => state?.ui);
-  const auth = useSelector((state) => state?.auth);
-  const user = auth?.details;
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isInstagramRoute =
-    location.pathname.includes('/workflows') ||
-    location.pathname.includes('/scheduler') ||
-    location.pathname.includes('/post-scheduler') ||
-    location.pathname.includes('/analytics') ||
-    location.pathname.includes('/instagram');
-
-  const [instagramExpanded, setInstagramExpanded] = useState(true);
-
-  // Auto-expand if active route is an Instagram page
-  useEffect(() => {
-    if (isInstagramRoute) {
-      setInstagramExpanded(true);
-    }
-  }, [location.pathname]);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isActive = (url) => location.pathname === url || location.pathname.startsWith(url + '/');
 
@@ -87,27 +54,76 @@ export default function Sidebar() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleConfirmLogout = async () => {
     try {
+      setIsLoggingOut(true);
       await logoutApi();
     } catch (e) {
-      // ignore
+      // ignore network logout errors
+    } finally {
+      clearAuthTokens();
+      dispatch(logout());
+      setIsLoggingOut(false);
+      setIsLogoutModalOpen(false);
+      navigate('/sign-in');
     }
-    clearAuthTokens();
-    dispatch(logout());
-    navigate('/sign-in');
   };
 
-  const getInitials = () => {
-    if (user?.name) {
-      return user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
+  // Nav Item component to ensure consistent tooltips & centered alignment when collapsed
+  const NavButton = ({ item, isCollapsed = false, isMobile = false }) => {
+    const Icon = item.icon;
+    const active = isActive(item.url);
+
+    if (isCollapsed) {
+      return (
+        <div className="relative flex justify-center w-full group">
+          <button
+            type="button"
+            onClick={() => handleNavigation(item.url)}
+            className={`relative flex items-center justify-center w-11 h-11 shrink-0 rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500/40 ${
+              active
+                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-white/[0.06]'
+            }`}
+            aria-label={item.text}
+          >
+            <Icon size={20} className={active ? 'text-cyan-400 shrink-0' : 'group-hover:text-cyan-400 transition-colors shrink-0'} />
+            {active && (
+              <span className="absolute left-1 w-1 h-5 bg-cyan-400 rounded-full shadow-[0_0_8px_#06B6D4]" />
+            )}
+          </button>
+
+          {/* Custom tooltip when collapsed */}
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E293B]/95 backdrop-blur-xl text-[#F8FAFC] text-xs font-medium rounded-lg shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-200 z-50 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span>{item.text}</span>
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#1E293B]" />
+          </div>
+        </div>
+      );
     }
-    return user?.email?.substring(0, 2).toUpperCase() || 'AI';
+
+    return (
+      <motion.button
+        onClick={() => handleNavigation(item.url)}
+        className={`relative flex items-center w-full gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500/40 ${
+          active
+            ? 'bg-gradient-to-r from-cyan-500/15 to-blue-600/15 text-white border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)] font-medium'
+            : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-white/[0.05]'
+        }`}
+        whileHover={{ x: isMobile ? 0 : 3 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Icon
+          size={19}
+          className={active ? 'text-cyan-400 shrink-0' : 'group-hover:text-cyan-400 transition-colors shrink-0'}
+        />
+        <span className="text-sm font-medium tracking-wide">{item.text}</span>
+        {active && (
+          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06B6D4]" />
+        )}
+      </motion.button>
+    );
   };
 
   // Desktop Sidebar
@@ -116,38 +132,54 @@ export default function Sidebar() {
       initial={false}
       animate={{ width: sidebarOpen ? 256 : 80 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 left-0 z-40 h-full bg-[#0F0F12] border-r border-white/5 flex-col hidden md:flex select-none"
+      className="fixed top-0 left-0 z-40 h-full bg-[#080C14] border-r border-white/[0.08] flex-col hidden md:flex select-none shadow-2xl"
     >
-      {/* Logo Area */}
-      <div
-        className={`flex items-center h-16 px-4 ${
-          sidebarOpen ? 'justify-between' : 'justify-center'
-        } border-b border-white/5`}
-      >
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center gap-2"
+      {/* Logo Area - Never squeezed when collapsed */}
+      {sidebarOpen ? (
+        <div className="flex items-center justify-between h-16 px-4 border-b border-white/[0.08]">
+          <div
+            className="flex items-center gap-2.5 cursor-pointer min-w-0"
+            onClick={() => handleNavigation('/dashboard')}
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
-              <SiGooglegemini className="w-4 h-4 text-white" />
+            <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+              <SiGooglegemini className="w-4 h-4 text-white shrink-0" />
             </div>
-            <span className="font-semibold text-lg bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            <span className="font-bold text-base bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
               Automate AI
             </span>
-          </motion.div>
-        )}
-        <button
-          onClick={() => dispatch(toggleSidebar())}
-          className="items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors hidden md:flex cursor-pointer"
-        >
-          {sidebarOpen ? <FiChevronLeft size={16} /> : <FiChevronRight size={16} />}
-        </button>
-      </div>
+          </div>
 
-      {/* Workspace Switcher (Task 42) */}
+          <button
+            onClick={() => dispatch(toggleSidebar())}
+            className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[#94A3B8] hover:text-[#F8FAFC] transition-colors cursor-pointer border border-white/[0.06] focus:outline-none"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+          >
+            <FiChevronLeft size={16} />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-16 border-b border-white/[0.08] relative group">
+          <button
+            type="button"
+            onClick={() => dispatch(toggleSidebar())}
+            className="w-10 h-10 shrink-0 min-w-[40px] rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_14px_rgba(6,182,212,0.35)] cursor-pointer hover:scale-105 active:scale-95 transition-all focus:outline-none"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <SiGooglegemini className="w-5 h-5 text-white shrink-0" />
+          </button>
+
+          {/* Tooltip on hover when collapsed */}
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E293B]/95 backdrop-blur-xl text-[#F8FAFC] text-xs font-medium rounded-lg shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-200 z-50 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span>Automate AI (Expand)</span>
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#1E293B]" />
+          </div>
+        </div>
+      )}
+
+      {/* Workspace Switcher */}
       {sidebarOpen ? (
         <div className="px-3 pt-3">
           <AccountSwitcher className="w-full" />
@@ -158,236 +190,65 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Main Navigation Scroll Area */}
-      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+      {/* Main Navigation Area (Clean, no vertical scrollbar when collapsed) */}
+      <nav
+        className={`flex-1 py-4 space-y-4 ${
+          sidebarOpen
+            ? 'px-3 overflow-y-auto custom-scrollbar'
+            : 'px-2 overflow-visible scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+        }`}
+      >
         {/* Core items */}
-        <div className="space-y-1">
-          {mainNavItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.url);
-            return (
-              <motion.button
-                key={item.url}
-                onClick={() => handleNavigation(item.url)}
-                className={`relative flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
-                  active
-                    ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Icon
-                  size={19}
-                  className={active ? 'text-cyan-400' : 'group-hover:text-cyan-400 transition-colors'}
-                />
-                {sidebarOpen && <span className="text-sm font-medium">{item.text}</span>}
-                {item.badge && sidebarOpen && (
-                  <span className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                    {item.badge}
-                  </span>
-                )}
-                {!sidebarOpen && (
-                  <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#1A1A1E] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-50">
-                    {item.text}
-                  </div>
-                )}
-              </motion.button>
-            );
-          })}
+        <div className="space-y-1.5">
+          {mainNavItems.map((item) => (
+            <NavButton key={item.url} item={item} isCollapsed={!sidebarOpen} />
+          ))}
         </div>
 
-        {/* --- REORGANIZED INSTAGRAM PARENT SECTION (Task 45) --- */}
-        <div className="space-y-1 pt-2 border-t border-white/5">
-          {sidebarOpen ? (
-            <div>
-              {/* Parent Section Header with Collapse toggle */}
-              <button
-                type="button"
-                onClick={() => setInstagramExpanded((prev) => !prev)}
-                className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center gap-2">
-                  <FaInstagram size={15} className="text-pink-400 group-hover:scale-110 transition-transform" />
-                  <span className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent font-bold">
-                    {instagramNav.title}
-                  </span>
-                </div>
-                <FiChevronDown
-                  size={14}
-                  className={`text-gray-400 transition-transform duration-200 ${
-                    instagramExpanded ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-
-              {/* Sub-items */}
-              <AnimatePresence initial={false}>
-                {instagramExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-1 pl-2 pt-1"
-                  >
-                    {instagramNav.items.map((sub) => {
-                      const SubIcon = sub.icon;
-                      const active = isActive(sub.url);
-                      return (
-                        <motion.button
-                          key={sub.url}
-                          onClick={() => handleNavigation(sub.url)}
-                          className={`relative flex items-center w-full gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 group cursor-pointer ${
-                            active
-                              ? 'bg-gradient-to-r from-pink-500/15 to-purple-500/15 text-white border border-pink-500/30'
-                              : 'text-gray-400 hover:text-white hover:bg-white/5'
-                          }`}
-                          whileHover={{ x: 3 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <SubIcon
-                            size={16}
-                            className={
-                              active
-                                ? 'text-pink-400'
-                                : 'text-gray-500 group-hover:text-pink-400 transition-colors'
-                            }
-                          />
-                          <span className="truncate">{sub.text}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ) : (
-            // Collapsed rail display
-            <div className="relative group">
-              <motion.button
-                onClick={() => handleNavigation('/workflows')}
-                className={`relative flex items-center justify-center w-full p-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
-                  isInstagramRoute
-                    ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border border-pink-500/30'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <FaInstagram size={20} className={isInstagramRoute ? 'text-pink-400' : 'text-gray-400'} />
-              </motion.button>
-
-              {/* Flyout Submenu on hover */}
-              <div className="absolute left-full top-0 ml-2 p-2 bg-[#141418] border border-white/10 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all w-52 space-y-1 z-50">
-                <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-pink-400 border-b border-white/5 mb-1">
-                  Instagram Automation
-                </div>
-                {instagramNav.items.map((sub) => {
-                  const SubIcon = sub.icon;
-                  const active = isActive(sub.url);
-                  return (
-                    <button
-                      key={sub.url}
-                      onClick={() => handleNavigation(sub.url)}
-                      className={`flex items-center w-full gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left ${
-                        active
-                          ? 'bg-pink-500/20 text-pink-300'
-                          : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <SubIcon size={14} className={active ? 'text-pink-400' : 'text-gray-400'} />
-                      <span className="truncate">{sub.text}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Workspace Management items */}
-        <div className="space-y-1 pt-2 border-t border-white/5">
+        {/* Workspace Utilities */}
+        <div className="space-y-1.5 pt-3 border-t border-white/[0.08]">
           {sidebarOpen && (
-            <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
               Workspace
             </div>
           )}
-          {secondaryNavItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.url);
-            return (
-              <motion.button
-                key={item.url}
-                onClick={() => handleNavigation(item.url)}
-                className={`relative flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
-                  active
-                    ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Icon
-                  size={19}
-                  className={active ? 'text-cyan-400' : 'group-hover:text-cyan-400 transition-colors'}
-                />
-                {sidebarOpen && <span className="text-sm font-medium">{item.text}</span>}
-                {!sidebarOpen && (
-                  <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#1A1A1E] text-white text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-50">
-                    {item.text}
-                  </div>
-                )}
-              </motion.button>
-            );
-          })}
+          {secondaryNavItems.map((item) => (
+            <NavButton key={item.url} item={item} isCollapsed={!sidebarOpen} />
+          ))}
         </div>
       </nav>
 
-      {/* User Profile Footer */}
-      <div className="p-4 border-t border-white/5 bg-white/[0.01]">
-        <div
-          className={`flex items-center ${
-            sidebarOpen ? 'justify-between' : 'justify-center'
-          } p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors`}
-        >
-          <div
-            onClick={() => navigate('/settings?search=profile')}
-            className={`flex items-center ${sidebarOpen ? 'gap-3 flex-1 min-w-0' : 'justify-center'} cursor-pointer group`}
-            title="Profile & Settings"
-          >
-            <div className="relative shrink-0">
-              {user?.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user?.name || 'User'}
-                  className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:border-cyan-500/50 transition-colors"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shadow-lg group-hover:shadow-cyan-500/20 transition-all">
-                  <span className="text-white font-semibold">{getInitials()}</span>
-                </div>
-              )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#0F0F12]" />
-            </div>
-            {sidebarOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex-1 min-w-0"
-              >
-                <p className="text-sm font-medium text-white group-hover:text-cyan-300 transition-colors truncate">{user?.name || 'User'}</p>
-                <p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
-              </motion.div>
-            )}
-          </div>
+      {/* Bottom Logout Area (NO profile icon, shows logout text when expanded, logout tooltip when collapsed) */}
+      <div className="p-3 border-t border-white/[0.08] bg-white/[0.01]">
+        {sidebarOpen ? (
           <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white cursor-pointer"
+            type="button"
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 active:bg-rose-500/15 transition-all duration-200 border border-transparent hover:border-rose-500/20 cursor-pointer group focus:outline-none"
+            aria-label="Log Out"
           >
-            <FiLogOut size={18} />
+            <FiLogOut size={18} className="text-[#94A3B8] group-hover:text-rose-400 transition-colors shrink-0" />
+            <span className="text-sm font-medium tracking-wide">Log Out</span>
           </button>
-        </div>
+        ) : (
+          <div className="relative group flex justify-center w-full">
+            <button
+              type="button"
+              onClick={() => setIsLogoutModalOpen(true)}
+              className="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 active:bg-rose-500/15 transition-all duration-200 border border-transparent hover:border-rose-500/20 cursor-pointer focus:outline-none"
+              aria-label="Log Out"
+            >
+              <FiLogOut size={19} className="shrink-0" />
+            </button>
+
+            {/* Logout tooltip text when sidebarOpen is false */}
+            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E293B]/95 backdrop-blur-xl text-rose-300 text-xs font-medium rounded-lg shadow-2xl border border-rose-500/25 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-200 z-50 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+              <span>Log Out</span>
+              <div className="absolute right-full top-1/2 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#1E293B]" />
+            </div>
+          </div>
+        )}
       </div>
     </motion.aside>
   );
@@ -412,24 +273,27 @@ export default function Sidebar() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 left-0 z-50 w-72 h-full bg-[#0F0F12] border-r border-white/10 flex flex-col shadow-2xl md:hidden select-none"
+            className="fixed top-0 left-0 z-50 w-72 h-full bg-[#080C14] border-r border-white/[0.08] flex flex-col shadow-2xl md:hidden select-none"
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
+              <div
+                className="flex items-center gap-2.5 cursor-pointer"
+                onClick={() => handleNavigation('/dashboard')}
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_12px_rgba(6,182,212,0.3)]">
                   <SiGooglegemini className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-semibold text-lg bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                <span className="font-bold text-base bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
                   Automate AI
                 </span>
               </div>
               <button
                 onClick={() => dispatch(closeMobileSidebar())}
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.06]"
                 aria-label="Close menu"
               >
-                <FiX size={20} />
+                <FiX size={18} />
               </button>
             </div>
 
@@ -439,125 +303,37 @@ export default function Sidebar() {
             </div>
 
             {/* Drawer Navigation */}
-            <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+            <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto custom-scrollbar">
               <div className="space-y-1">
-                {mainNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.url);
-                  return (
-                    <button
-                      key={item.url}
-                      onClick={() => handleNavigation(item.url)}
-                      className={`flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
-                        active
-                          ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10'
-                          : 'text-gray-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <Icon size={19} className={active ? 'text-cyan-400' : ''} />
-                      <span className="text-sm font-medium flex-1 text-left">{item.text}</span>
-                      {item.badge && (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                {mainNavItems.map((item) => (
+                  <NavButton key={item.url} item={item} isMobile={true} />
+                ))}
               </div>
 
-              {/* Instagram Section (Mobile) */}
-              <div className="space-y-1 pt-2 border-t border-white/5">
-                <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-pink-400">
-                  <FaInstagram size={15} />
-                  <span>{instagramNav.title}</span>
-                </div>
-                <div className="space-y-1 pl-2">
-                  {instagramNav.items.map((sub) => {
-                    const SubIcon = sub.icon;
-                    const active = isActive(sub.url);
-                    return (
-                      <button
-                        key={sub.url}
-                        onClick={() => handleNavigation(sub.url)}
-                        className={`flex items-center w-full gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer ${
-                          active
-                            ? 'bg-pink-500/15 text-white border border-pink-500/30'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <SubIcon size={16} className={active ? 'text-pink-400' : 'text-gray-400'} />
-                        <span>{sub.text}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Secondary Navigation (Mobile) */}
-              <div className="space-y-1 pt-2 border-t border-white/5">
-                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              <div className="space-y-1 pt-3 border-t border-white/[0.08]">
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
                   Workspace
                 </div>
-                {secondaryNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.url);
-                  return (
-                    <button
-                      key={item.url}
-                      onClick={() => handleNavigation(item.url)}
-                      className={`flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
-                        active
-                          ? 'bg-gradient-to-r from-cyan-500/10 to-violet-500/10 text-white border border-white/10'
-                          : 'text-gray-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <Icon size={19} className={active ? 'text-cyan-400' : ''} />
-                      <span className="text-sm font-medium flex-1 text-left">{item.text}</span>
-                    </button>
-                  );
-                })}
+                {secondaryNavItems.map((item) => (
+                  <NavButton key={item.url} item={item} isMobile={true} />
+                ))}
               </div>
             </nav>
 
-            {/* Drawer User Profile Footer */}
-            <div className="p-4 border-t border-white/10 bg-white/[0.01]">
-              <div className="flex items-center gap-3">
-                <div
-                  onClick={() => {
-                    navigate('/settings?search=profile');
-                    dispatch(closeMobileSidebar());
-                  }}
-                  className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group"
-                  title="Profile & Settings"
-                >
-                  <div className="relative shrink-0">
-                    {user?.avatarUrl ? (
-                      <img
-                        src={user.avatarUrl}
-                        alt={user?.name || 'User'}
-                        className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:border-cyan-500/50 transition-colors"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shadow-lg group-hover:shadow-cyan-500/20 transition-all">
-                        <span className="text-white font-semibold">{getInitials()}</span>
-                      </div>
-                    )}
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#0F0F12]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white group-hover:text-cyan-300 transition-colors truncate">{user?.name || 'User'}</p>
-                    <p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  title="Sign out"
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white cursor-pointer"
-                >
-                  <FiLogOut size={18} />
-                </button>
-              </div>
+            {/* Drawer Bottom Logout */}
+            <div className="p-4 border-t border-white/[0.08] bg-white/[0.01]">
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch(closeMobileSidebar());
+                  setIsLogoutModalOpen(true);
+                }}
+                className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 active:bg-rose-500/15 transition-all duration-200 border border-transparent hover:border-rose-500/20 cursor-pointer group focus:outline-none"
+                aria-label="Log Out"
+              >
+                <FiLogOut size={18} className="text-[#94A3B8] group-hover:text-rose-400 transition-colors shrink-0" />
+                <span className="text-sm font-medium tracking-wide">Log Out</span>
+              </button>
             </div>
           </motion.aside>
         </>
@@ -569,6 +345,20 @@ export default function Sidebar() {
     <>
       <DesktopSidebar />
       <MobileSidebar />
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isLogoutModalOpen}
+        onClose={() => !isLoggingOut && setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+        title="Sign out of Automate AI?"
+        description="Are you sure you want to sign out of your account? Any active workspace session will end."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        variant="destructive"
+        loading={isLoggingOut}
+        icon={FiLogOut}
+      />
     </>
   );
 }

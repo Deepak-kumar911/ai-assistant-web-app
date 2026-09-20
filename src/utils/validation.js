@@ -66,5 +66,5 @@ export const agentBehaviourInitVal = {
 }
 
 export const agentBehaviourValidSchema = yup.object().shape({
-    behaviour: yup.string(),
+    behaviour: yup.string().max(300, 'System prompt cannot exceed 300 characters'),
 });

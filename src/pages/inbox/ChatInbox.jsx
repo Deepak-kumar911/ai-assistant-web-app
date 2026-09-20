@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   FiMessageSquare,
   FiSearch,
@@ -24,7 +26,8 @@ import {
   updateThreadStatusApi,
 } from "../../api/inbox/inboxApi";
 import { getApiWithToken } from "../../api/apiInterface";
-import { EmptyState, Skeleton, useToast } from "../../components/ui";
+import { EmptyState, Skeleton, useToast, CustomSelect } from "../../components/ui";
+
 
 const PLATFORM_CONFIG = {
   website: {
@@ -78,8 +81,40 @@ const STATUS_CONFIG = {
   },
 };
 
-export default function ChatInbox() {
+export default function ChatInbox({
+  fixedPlatform,
+  fixedAgentId,
+  hidePlatformFilter,
+  hideAgentFilter,
+}) {
   const toast = useToast();
+  const routeParams = useParams();
+  const integrationDetails = useSelector((state) => state?.integration?.details);
+  const resolvedIntegrationAgentId =
+    (integrationDetails?.aiAgentId?._id || integrationDetails?.aiAgentId)?.toString() || null;
+
+  // Detect whether we are scoped inside an integration (e.g. Website Automation)
+  const isWebsiteScope =
+    fixedPlatform === "website" || routeParams?.platform === "website";
+
+  const effectivePlatform =
+    fixedPlatform || (routeParams?.platform ? routeParams.platform : "all");
+
+  const effectiveAgentId =
+    fixedAgentId ||
+    resolvedIntegrationAgentId ||
+    (routeParams?.agentId ? routeParams.agentId : "all");
+
+  const shouldHidePlatform =
+    hidePlatformFilter !== undefined
+      ? hidePlatformFilter
+      : Boolean(routeParams?.platform || fixedPlatform);
+
+  const shouldHideAgent =
+    hideAgentFilter !== undefined
+      ? hideAgentFilter
+      : Boolean(routeParams?.platformId || fixedAgentId);
+
   const [threads, setThreads] = useState([]);
   const [agents, setAgents] = useState([]);
   const [selectedThreadId, setSelectedThreadId] = useState(null);
@@ -90,9 +125,9 @@ export default function ChatInbox() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState("all");
+  const [selectedPlatform, setSelectedPlatform] = useState(effectivePlatform);
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedAgent, setSelectedAgent] = useState("all");
+  const [selectedAgent, setSelectedAgent] = useState(effectiveAgentId);
   const [stats, setStats] = useState({
     total: 0,
     open: 0,
@@ -101,16 +136,24 @@ export default function ChatInbox() {
     byPlatform: { website: 0, instagram: 0, whatsapp: 0, facebook: 0 },
   });
 
-  // Load agents
+  // Keep filters in sync if route params change
   useEffect(() => {
-    getApiWithToken("ai-agent/all")
-      .then((res) => {
-        if (res.data?.data) {
-          setAgents(res.data.data);
-        }
-      })
-      .catch((err) => console.error("Failed to load agents", err));
-  }, []);
+    if (effectivePlatform) setSelectedPlatform(effectivePlatform);
+    if (effectiveAgentId) setSelectedAgent(effectiveAgentId);
+  }, [effectivePlatform, effectiveAgentId]);
+
+  // Load agents if agent selector is visible
+  useEffect(() => {
+    if (!shouldHideAgent) {
+      getApiWithToken("ai-agent/all")
+        .then((res) => {
+          if (res.data?.data) {
+            setAgents(res.data.data);
+          }
+        })
+        .catch((err) => console.error("Failed to load agents", err));
+    }
+  }, [shouldHideAgent]);
 
   // Fetch threads list
   const fetchThreads = useCallback(async (keepSelected = true) => {
@@ -232,16 +275,26 @@ export default function ChatInbox() {
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-            <FiMessageSquare size={22} />
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 shadow-sm mt-0.5 sm:mt-0">
+            <FiMessageSquare size={22} className="shrink-0" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Unified Chat Inbox
+          <div className="min-w-0 flex-1">
+            {isWebsiteScope && (
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="shrink-0 whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  Website Automation
+                </span>
+                <span className="text-xs text-gray-500 whitespace-nowrap">• Live Visitor Conversations</span>
+              </div>
+            )}
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {isWebsiteScope ? "Website Chat Inbox" : "Unified Chat Inbox"}
             </h1>
-            <p className="text-sm text-gray-400">
-              Read-only conversation log across Website Chat, Instagram DM, and connected channels
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+              {isWebsiteScope
+                ? "Real-time conversation history with visitors chatting through your embedded website widget"
+                : "Read-only conversation log across Website Chat, Instagram DM, and connected channels"}
             </p>
           </div>
         </div>
@@ -249,9 +302,9 @@ export default function ChatInbox() {
         <button
           onClick={() => fetchThreads(true)}
           disabled={loadingThreads}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium border border-white/10 transition-colors self-start md:self-auto"
+          className="shrink-0 whitespace-nowrap flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium border border-white/10 transition-colors self-start md:self-auto cursor-pointer"
         >
-          <FiRefreshCw className={`w-4 h-4 ${loadingThreads ? "animate-spin text-cyan-400" : ""}`} />
+          <FiRefreshCw className={`w-4 h-4 shrink-0 ${loadingThreads ? "animate-spin text-cyan-400" : ""}`} />
           <span>Refresh</span>
         </button>
       </div>
@@ -271,19 +324,30 @@ export default function ChatInbox() {
           <span className="text-xl font-bold text-amber-400 mt-1 block">{stats.escalated}</span>
         </div>
         <div className="p-3.5 rounded-xl bg-[#13131A] border border-white/5">
-          <span className="text-xs text-gray-400 font-medium block">Channels</span>
+          <span className="text-xs text-gray-400 font-medium block">
+            {isWebsiteScope ? "Active Channel" : "Channels"}
+          </span>
           <div className="text-xs text-gray-300 mt-1.5 flex items-center gap-2 font-medium">
-            <span>Web: {stats.byPlatform?.website || 0}</span>
-            <span>•</span>
-            <span>IG: {stats.byPlatform?.instagram || 0}</span>
+            {isWebsiteScope ? (
+              <span className="text-cyan-400 flex items-center gap-1.5">
+                <FiGlobe size={13} />
+                Website Widget ({stats.byPlatform?.website || stats.total || 0})
+              </span>
+            ) : (
+              <>
+                <span>Web: {stats.byPlatform?.website || 0}</span>
+                <span>•</span>
+                <span>IG: {stats.byPlatform?.instagram || 0}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main 2-Pane Inbox Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[720px] bg-[#13131A] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 h-[calc(100vh-220px)] min-h-[560px] lg:h-[720px] bg-[#13131A] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
         {/* LEFT PANE: Threads List (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col border-r border-white/5 bg-[#0F0F12]/50">
+        <div className={`lg:col-span-5 flex flex-col border-r border-white/5 bg-[#0F0F12]/50 h-full ${selectedThreadId ? "hidden lg:flex" : "flex"}`}>
           {/* Filters Bar */}
           <div className="p-4 border-b border-white/5 space-y-3">
             {/* Search Input */}
@@ -298,29 +362,45 @@ export default function ChatInbox() {
               />
             </div>
 
-            {/* Platform & Status Dropdowns */}
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                value={selectedPlatform}
-                onChange={(e) => setSelectedPlatform(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
-              >
-                <option value="all" className="bg-[#13131A]">All Channels</option>
-                <option value="website" className="bg-[#13131A]">Website</option>
-                <option value="instagram" className="bg-[#13131A]">Instagram</option>
-                <option value="whatsapp" className="bg-[#13131A]">WhatsApp</option>
-              </select>
+            {/* Custom Glassmorphic Dropdowns (Hide channel dropdown if website-scoped) */}
+            <div className={`grid ${shouldHidePlatform && shouldHideAgent ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
+              {!shouldHidePlatform && (
+                <CustomSelect
+                  value={selectedPlatform}
+                  onChange={setSelectedPlatform}
+                  options={[
+                    { value: "all", label: "All Channels" },
+                    { value: "website", label: "Website", icon: FiGlobe },
+                    { value: "instagram", label: "Instagram", icon: FiInstagram },
+                    { value: "whatsapp", label: "WhatsApp", icon: FiMessageSquare },
+                  ]}
+                  placeholder="Select Channel"
+                />
+              )}
 
-              <select
+              {!shouldHideAgent && agents.length > 0 && (
+                <CustomSelect
+                  value={selectedAgent}
+                  onChange={setSelectedAgent}
+                  options={[
+                    { value: "all", label: "All Agents" },
+                    ...agents.map((ag) => ({ value: ag._id, label: ag.name })),
+                  ]}
+                  placeholder="Select Agent"
+                />
+              )}
+
+              <CustomSelect
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
-              >
-                <option value="all" className="bg-[#13131A]">All Statuses</option>
-                <option value="open" className="bg-[#13131A]">Open</option>
-                <option value="escalated" className="bg-[#13131A]">Escalated</option>
-                <option value="closed" className="bg-[#13131A]">Closed</option>
-              </select>
+                onChange={setSelectedStatus}
+                options={[
+                  { value: "all", label: "All Statuses" },
+                  { value: "open", label: "Open", dot: "bg-cyan-400" },
+                  { value: "escalated", label: "Escalated", dot: "bg-amber-400" },
+                  { value: "closed", label: "Closed", dot: "bg-gray-400" },
+                ]}
+                placeholder="Select Status"
+              />
             </div>
           </div>
 
@@ -419,16 +499,24 @@ export default function ChatInbox() {
         </div>
 
         {/* RIGHT PANE: Message Stream & Transcript (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col bg-[#0A0A0C]">
+        <div className={`lg:col-span-7 flex flex-col bg-[#0A0A0C] h-full ${!selectedThreadId ? "hidden lg:flex" : "flex"}`}>
           {selectedThreadId && activeThreadData ? (
             <>
               {/* Thread Viewer Header */}
-              <div className="p-4 border-b border-white/5 bg-[#0F0F12] flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-cyan-400 font-semibold text-xs border border-white/10">
+              <div className="p-3.5 sm:p-4 border-b border-white/5 bg-[#0F0F12] flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedThreadId(null)}
+                    className="lg:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer shrink-0"
+                    title="Back to conversations"
+                  >
+                    <FiChevronLeft size={18} />
+                  </button>
+                  <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-cyan-400 font-semibold text-xs border border-white/10 shrink-0">
                     {(activeThreadData.thread?.participantId || "V").slice(0, 2).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-bold text-white">
                         {activeThreadData.thread?.participantId || "Conversation"}
@@ -462,19 +550,20 @@ export default function ChatInbox() {
                   </div>
                 </div>
 
-                {/* Status Switcher Dropdown */}
+                {/* Status Switcher Custom Dropdown */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 font-medium">Status:</span>
-                  <select
+                  <span className="text-xs text-gray-400 font-medium">Status:</span>
+                  <CustomSelect
                     value={activeThreadData.thread?.status || "open"}
-                    onChange={(e) => handleStatusChange(e.target.value)}
+                    onChange={(val) => handleStatusChange(val)}
                     disabled={updatingStatus}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-500/50"
-                  >
-                    <option value="open" className="bg-[#13131A] text-cyan-400">Open</option>
-                    <option value="escalated" className="bg-[#13131A] text-amber-400">Escalated</option>
-                    <option value="closed" className="bg-[#13131A] text-gray-400">Closed</option>
-                  </select>
+                    className="w-32"
+                    options={[
+                      { value: "open", label: "Open", dot: "bg-cyan-400" },
+                      { value: "escalated", label: "Escalated", dot: "bg-amber-400" },
+                      { value: "closed", label: "Closed", dot: "bg-gray-400" },
+                    ]}
+                  />
                 </div>
               </div>
 
