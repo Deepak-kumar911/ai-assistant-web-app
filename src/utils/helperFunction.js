@@ -1,8 +1,18 @@
-let token = "ai-assistant"
+let token = "ai-assistant";
+let refreshTokenKey = "ai-assistant-refresh";
 
-export const getToken =()=> localStorage.getItem(token)
-export const setToken =(value)=> localStorage.setItem(token,value)
-export const removeToken =()=> localStorage.removeItem(token)
+export const getToken = () => localStorage.getItem(token);
+export const setToken = (value) => localStorage.setItem(token, value);
+export const removeToken = () => localStorage.removeItem(token);
+
+export const getRefreshToken = () => localStorage.getItem(refreshTokenKey);
+export const setRefreshToken = (value) => localStorage.setItem(refreshTokenKey, value);
+export const removeRefreshToken = () => localStorage.removeItem(refreshTokenKey);
+
+export const clearAuthTokens = () => {
+    localStorage.removeItem(token);
+    localStorage.removeItem(refreshTokenKey);
+};
 
 export const getFilterQuery = (searchFilter = {}) => {
     if (typeof searchFilter !== "object") return ""

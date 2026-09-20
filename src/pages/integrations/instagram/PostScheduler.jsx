@@ -30,10 +30,31 @@ export default function PostScheduler() {
     const fetchScheduledPosts = async () => {
         try {
             const data = await workflowService.getAllWorkflows();
-            const instagramWorkflows = data.filter(wf =>
-                wf.type === 'instagram-post' ||
-                wf.nodes?.some(node => node.type === 'instagram')
-            );
+            const instagramWorkflows = (data || [])
+                .filter(wf =>
+                    wf.type === 'instagram-post' ||
+                    wf.nodes?.some(node => node.type?.includes('instagram'))
+                )
+                .map(wf => {
+                    const schedNode = wf.nodes?.find(n => n.type === 'trigger.schedule');
+                    const publishNode = wf.nodes?.find(n => n.type === 'action.instagram_publish_post' || n.type?.includes('instagram'));
+
+                    const rawScheduleTime = schedNode?.config?.scheduleTime || wf.scheduledDate || wf.createdAt;
+                    const parsedDate = rawScheduleTime ? new Date(rawScheduleTime) : new Date();
+
+                    const mediaUrl = publishNode?.config?.mediaUrl || wf.media?.[0]?.url;
+                    const mediaType = (publishNode?.config?.mediaType || wf.postType || 'post').toLowerCase();
+
+                    return {
+                        ...wf,
+                        caption: wf.caption || publishNode?.config?.caption || '',
+                        scheduledDate: parsedDate.toISOString(),
+                        scheduledTime: rawScheduleTime ? parsedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Immediate',
+                        postType: mediaType.includes('reel') ? 'reel' : mediaType.includes('video') ? 'video' : mediaType.includes('carousel') ? 'carousel' : 'post',
+                        media: wf.media && wf.media.length > 0 ? wf.media : (mediaUrl ? [{ url: mediaUrl, type: mediaType.includes('video') || mediaType.includes('reel') ? 'video' : 'image' }] : []),
+                    };
+                });
+
             setWorkflows(instagramWorkflows);
             setFilteredWorkflows(instagramWorkflows);
         } catch (error) {

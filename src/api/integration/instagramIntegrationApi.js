@@ -15,3 +15,7 @@ export const createInstaMediaContainerApi = (payload)=>{
 export const publishMediaContainerApi = (payload)=>{
     return  postApiWithToken(`integration/instagram/media/publishMediaContainer`,payload)
 }
+
+export const getInstagramInsightsApi = (agentId = "") => {
+    return getApiWithToken(`integration/instagram/insights${agentId ? `?agentId=${agentId}` : ""}`);
+}

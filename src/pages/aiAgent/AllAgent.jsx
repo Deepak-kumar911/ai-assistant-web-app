@@ -1,4 +1,4 @@
-// pages/ai-agent/AllAgent.tsx (Redesigned)
+// pages/ai-agent/AllAgent.jsx (Task 39: Plan-Gated Agent Management)
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,9 +20,13 @@ import {
   FiGrid,
   FiList
 } from 'react-icons/fi';
+import { Zap, Sparkles, AlertCircle } from 'lucide-react';
 import { setAgentDetail } from '../../stateManagement/slices/aiAgentSlice';
-import { getAllUserAIagentApi } from '../../api/authApi';
+import { getAllUserAIagentApi, getAccountUsageApi } from '../../api/authApi';
 import Loader from '../../components/common/Loader';
+import { Badge, Button } from '../../components/ui';
+import CreateAgentModal from '../../components/agent/CreateAgentModal';
+import UpgradePlanModal from '../../components/plan/UpgradePlanModal';
 
 const AllAgent = () => {
   const navigate = useNavigate();
@@ -33,6 +37,11 @@ const AllAgent = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // grid or list
   const [selectedAgent, setSelectedAgent] = useState(null);
+
+  // Task 39: Plan gating and usage state
+  const [usage, setUsage] = useState(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const fetchAgents = async () => {
     setLoading(true);
@@ -47,9 +56,33 @@ const AllAgent = () => {
     }
   };
 
+  const fetchUsage = async () => {
+    try {
+      const res = await getAccountUsageApi();
+      if (res?.data?.data) {
+        setUsage(res.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching account usage:', err);
+    }
+  };
+
   useEffect(() => {
     fetchAgents();
+    fetchUsage();
   }, []);
+
+  const handleAgentCreated = (newAgent) => {
+    fetchAgents();
+    fetchUsage();
+  };
+
+  // Usage calculations
+  const agentCount = usage?.agentCount ?? list.length;
+  const agentLimit = usage?.agentLimit ?? 1;
+  const plan = usage?.plan ?? 'free';
+  const isAtLimit = agentCount >= agentLimit;
+  const percentUsed = Math.min(100, Math.round((agentCount / agentLimit) * 100));
 
   const filteredAgents = list.filter(agent => {
     const matchesSearch = agent?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,15 +130,109 @@ const AllAgent = () => {
           </h1>
           <p className="text-gray-400 mt-1">Manage and monitor your intelligent automation agents</p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/ai-agent/create')}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
-        >
-          <FiPlus size={18} />
-          <span>Create New Agent</span>
-        </motion.button>
+
+        {/* Header Actions */}
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="primary"
+            disabled={isAtLimit}
+            onClick={() => {
+              if (isAtLimit) {
+                toast.info(`Agent limit reached (${agentCount}/${agentLimit}) for ${plan} plan.`);
+                setUpgradeModalOpen(true);
+                return;
+              }
+              setCreateModalOpen(true);
+            }}
+            icon={FiPlus}
+            className={isAtLimit ? 'opacity-60 cursor-not-allowed' : ''}
+          >
+            Create New Agent
+          </Button>
+
+          {isAtLimit && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setUpgradeModalOpen(true)}
+              icon={Sparkles}
+              className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+            >
+              Upgrade Plan
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Task 39: Plan Usage Banner */}
+      <div className="bg-[#0F172A] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div
+            className={`p-2.5 rounded-xl ${
+              isAtLimit ? 'bg-amber-500/15 text-amber-400' : 'bg-[#06B6D4]/15 text-[#06B6D4]'
+            }`}
+          >
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-[#F8FAFC]">Plan Usage</h3>
+              <Badge
+                variant={plan === 'ultra' ? 'warning' : plan === 'pro' ? 'accent' : 'default'}
+                size="sm"
+                styleType="solid"
+                className="uppercase font-bold tracking-wider text-[10px]"
+              >
+                {plan} plan
+              </Badge>
+            </div>
+            <p className="text-xs text-[#94A3B8] mt-0.5">
+              <strong className="text-[#F8FAFC]">
+                {agentCount} of {agentLimit}
+              </strong>{' '}
+              agents used ({Math.max(0, agentLimit - agentCount)} remaining)
+            </p>
+          </div>
+        </div>
+
+        {/* Visual Progress Bar */}
+        <div className="flex items-center gap-4 flex-1 max-w-md">
+          <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                isAtLimit
+                  ? 'bg-amber-500'
+                  : percentUsed > 75
+                  ? 'bg-amber-400'
+                  : 'bg-[#06B6D4]'
+              }`}
+              style={{ width: `${percentUsed}%` }}
+            />
+          </div>
+          <span className="text-xs font-semibold text-[#94A3B8] shrink-0">
+            {percentUsed}%
+          </span>
+        </div>
+
+        {/* Upgrade Action */}
+        <div className="flex items-center gap-2.5">
+          {isAtLimit && (
+            <span className="text-xs text-amber-400/90 font-medium hidden lg:inline">
+              Limit reached
+            </span>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setUpgradeModalOpen(true)}
+            icon={Sparkles}
+            className="border-white/15 hover:border-[#06B6D4]/50 hover:bg-[#06B6D4]/10 text-[#F8FAFC]"
+          >
+            Upgrade Plan
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -240,6 +367,8 @@ const AllAgent = () => {
           <p className="text-gray-400 mb-6">
             {searchTerm || filterStatus !== 'all' 
               ? "No agents match your search criteria" 
+              : isAtLimit
+              ? `You have reached the limit (${agentCount}/${agentLimit}) for the ${plan} plan.`
               : "Create your first AI agent to get started"}
           </p>
           {(searchTerm || filterStatus !== 'all') ? (
@@ -252,14 +381,22 @@ const AllAgent = () => {
             >
               Clear filters
             </button>
-          ) : (
-            <button
-              onClick={() => navigate('/ai-agent/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-lg text-white font-medium hover:shadow-lg transition-all"
+          ) : isAtLimit ? (
+            <Button
+              variant="outline"
+              onClick={() => setUpgradeModalOpen(true)}
+              icon={Sparkles}
             >
-              <FiPlus size={16} />
+              Upgrade Plan to Add Agents
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => setCreateModalOpen(true)}
+              icon={FiPlus}
+            >
               Create Agent
-            </button>
+            </Button>
           )}
         </motion.div>
       ) : (
@@ -340,11 +477,11 @@ const AllAgent = () => {
                     <div className="flex items-center gap-4 mb-4 pt-3 border-t border-white/10">
                       <div className="flex items-center gap-1.5">
                         <FiClock size={12} className="text-gray-500" />
-                        <span className="text-xs text-gray-500">Created 2d ago</span>
+                        <span className="text-xs text-gray-500">Active</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <FiActivity size={12} className="text-gray-500" />
-                        <span className="text-xs text-gray-500">1.2k tasks</span>
+                        <span className="text-xs text-gray-500">Autonomous</span>
                       </div>
                     </div>
 
@@ -379,11 +516,11 @@ const AllAgent = () => {
                       <div className="flex items-center gap-4">
                         <div className="hidden sm:flex items-center gap-1.5">
                           <FiClock size={12} className="text-gray-500" />
-                          <span className="text-xs text-gray-500">Created 2d ago</span>
+                          <span className="text-xs text-gray-500">Active</span>
                         </div>
                         <div className="hidden sm:flex items-center gap-1.5">
                           <FiActivity size={12} className="text-gray-500" />
-                          <span className="text-xs text-gray-500">1.2k tasks</span>
+                          <span className="text-xs text-gray-500">Autonomous</span>
                         </div>
                       </div>
                     </div>
@@ -400,6 +537,21 @@ const AllAgent = () => {
           </AnimatePresence>
         </motion.div>
       )}
+
+      {/* Create Agent Modal */}
+      <CreateAgentModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSuccess={handleAgentCreated}
+        onPlanLimitExceeded={() => setUpgradeModalOpen(true)}
+      />
+
+      {/* Upgrade Plan Modal */}
+      <UpgradePlanModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        currentPlan={plan}
+      />
     </div>
   );
 };

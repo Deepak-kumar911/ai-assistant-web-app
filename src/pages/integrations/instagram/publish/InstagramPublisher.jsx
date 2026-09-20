@@ -1,25 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiImage, FiVideo, FiCalendar, FiClock } from "react-icons/fi";
 import { uploadMediaApi } from "../../../../api/uploadApi";
 import { useSelector } from "react-redux";
-import { createInstaMediaContainerApi, publishMediaContainerApi } from "../../../../api/integration/instagramIntegrationApi";
-import FlowCanvas from "../../../../components/workflow/canvas/FlowCanvas";
+import { workflowService } from "../../../../services/workflowService";
 
 const InstagramPublisher = () => {
-  const { details: integrationDetails } = useSelector(state => state?.integration)
+  const navigate = useNavigate();
+  const { details: integrationDetails } = useSelector(state => state?.integration);
   const [mediaType, setMediaType] = useState("post");
   const [media, setMedia] = useState([]);
   const [caption, setCaption] = useState("");
   const [schedule, setSchedule] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [publising, setPublising] = useState(false);
-  const [mediaContainerId, setMediaContainerId] = useState(null);
-
-  const aiAgentId = integrationDetails?._id
-  const activeIntegrationId = integrationDetails?.activeIntegrationId
-
+  const [submitting, setSubmitting] = useState(false);
 
   const postTypes = {
     "post": { label: "Post", icon: FiImage, mediaType: "IMAGE", },
@@ -30,7 +25,7 @@ const InstagramPublisher = () => {
   };
 
   const handleFileChange = async (e) => {
-    if (loading) return
+    if (loading) return;
     const files = Array.from(e.target.files);
 
     setLoading(true);
@@ -54,51 +49,55 @@ const InstagramPublisher = () => {
     }
   };
 
-  const handleSaveMedia = async () => {
-    if (saving || !media?.length || !caption || !mediaType) return
-    setSaving(true);
+  // Quick-Schedule via Workflow Engine (PRD REQ-WF-06, TRD §2.4, AGENT_TASK_PLAN.md Task 29)
+  const handleQuickSchedule = async (isImmediate = false) => {
+    if (submitting) return;
+    if (!media?.length || !media[0]?.mediaUrl) {
+      alert("Please upload at least one image or video.");
+      return;
+    }
+    if (!caption.trim()) {
+      alert("Please enter a caption for your post.");
+      return;
+    }
+    if (!isImmediate && schedule && !scheduleDate) {
+      alert("Please select a date and time for the scheduled post.");
+      return;
+    }
 
+    setSubmitting(true);
     try {
-      const payload = { activeIntegrationId, mediaUrl: media?.[0]?.mediaUrl, mediaType: postTypes?.[mediaType]?.mediaType, caption }
-      const { data } = await createInstaMediaContainerApi(payload);
-      setMediaContainerId(data?.containerId);
-    } catch (err) {
-      console.log("error to save", err);
+      const selectedMedia = media[0]?.mediaUrl;
+      const targetMediaType = postTypes[mediaType]?.mediaType || "IMAGE";
 
-      alert("Failed to save media");
+      await workflowService.quickSchedulePost({
+        mediaUrl: selectedMedia,
+        caption,
+        mediaType: targetMediaType,
+        scheduleDate: isImmediate ? null : (schedule ? scheduleDate : null),
+      });
+
+      alert(isImmediate ? "Post submitted for immediate publishing!" : "Post scheduled successfully!");
+      navigate("/integration/instagram/post-scheduler");
+    } catch (err) {
+      console.error("[QUICK SCHEDULE ERROR]", err);
+      alert(err.message || "Failed to schedule post");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
-
-  const handlePublishMedia = async (e) => {
-    if (publising || !mediaContainerId) return
-    setPublising(true);
-
-    try {
-      const payload = { activeIntegrationId, containerId: mediaContainerId }
-      const { data } = await publishMediaContainerApi(payload);
-      console.log("data", data);
-      alert("Posted")
-    } catch (err) {
-      alert("Failed to publish media");
-    } finally {
-      setPublising(false);
-    }
-  };
-
-  console.log("media", mediaContainerId);
-
 
   return (
-    <div className="">
-      <FlowCanvas />
-      <div className="flex h-screen w-full overflow-hidden">
-      </div>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Create Instagram {postTypes?.[mediaType]?.label}</h2>
-        <button className="px-4 py-2 bg-gray-100 rounded-lg">Back</button>
+        <button
+          onClick={() => navigate("/integration/instagram/post-scheduler")}
+          className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Back
+        </button>
       </div>
 
       {/* Step 1: Post Type Selection */}
@@ -185,11 +184,22 @@ const InstagramPublisher = () => {
 
       {/* Footer Actions */}
       <div className="flex justify-end gap-3">
-        <button onClick={handleSaveMedia} disabled={loading || !media?.length || saving} className="px-4 py-2 border rounded-lg">Save</button>
         {schedule ? (
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Schedule</button>
+          <button
+            onClick={() => handleQuickSchedule(false)}
+            disabled={loading || !media?.length || submitting}
+            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg disabled:opacity-50 transition-colors"
+          >
+            {submitting ? "Scheduling Post..." : "Schedule Post"}
+          </button>
         ) : (
-          <button onClick={handlePublishMedia} disabled={!mediaContainerId} className="px-4 py-2 bg-green-600 text-white rounded-lg">Publish</button>
+          <button
+            onClick={() => handleQuickSchedule(true)}
+            disabled={loading || !media?.length || submitting}
+            className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg disabled:opacity-50 transition-colors"
+          >
+            {submitting ? "Publishing Post..." : "Publish Now"}
+          </button>
         )}
       </div>
     </div>

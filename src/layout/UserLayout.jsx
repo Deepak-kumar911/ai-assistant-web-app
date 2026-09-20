@@ -15,7 +15,9 @@ export default function UserLayout({children}) {
   const dispatch = useDispatch();
   const { sidebarOpen, mobileSidebarOpen } = useSelector((state) => state?.ui);
   const { login } = useSelector((state) => state?.auth);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
 
   useEffect(() => {
     const checkMobile = () => {
@@ -32,20 +34,14 @@ export default function UserLayout({children}) {
   }, [dispatch, mobileSidebarOpen]);
 
   useEffect(() => {
-    if (!login || !getToken()) {
+    if (!login) {
       navigate('/sign-in');
     }
   }, [location?.pathname, login, navigate]);
 
-  if (!login || !getToken()) {
+  if (!login) {
     return null;
   }
-
-  // Calculate margin only for desktop
-  const getMarginLeft = () => {
-    if (isMobile) return '0rem';
-    return sidebarOpen ? '16rem' : '5rem';
-  };
 
   return (
     <div className="relative flex flex-col h-screen overflow-hidden bg-[#0A0A0B] text-gray-200">
@@ -53,14 +49,15 @@ export default function UserLayout({children}) {
       <div className="fixed top-0 -left-48 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px] pointer-events-none" />
       <div className="fixed bottom-0 -right-48 w-96 h-96 bg-violet-500/10 rounded-full blur-[128px] pointer-events-none" />
       
-      <div className="relative flex flex-1 min-h-0">
+      <div className="relative flex flex-1 min-h-0 w-full">
         {/* Sidebar - visible on both mobile and desktop but controlled differently */}
         <Sidebar />
         
         {/* Main Content Area */}
         <div 
-          className="relative flex flex-col flex-1 min-w-0 transition-all duration-300"
-          style={{ marginLeft: getMarginLeft() }}
+          className={`relative flex flex-col flex-1 min-w-0 transition-all duration-300 w-full ${
+            isMobile ? 'ml-0' : sidebarOpen ? 'ml-64' : 'ml-20'
+          }`}
         >
           <Header />
           <main className="flex-1 overflow-y-auto custom-scrollbar pb-20 md:pb-6">

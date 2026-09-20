@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FiPlay, FiMoreVertical, FiPause } from 'react-icons/fi';
 
 
-export default function WorkflowCard({ workflow, delay = 0 }) {
+export function WorkflowCard({ workflow, delay = 0 }) {
   const isActive = workflow.status === 'active';
   
   return (
@@ -41,3 +41,5 @@ export default function WorkflowCard({ workflow, delay = 0 }) {
     </motion.div>
   );
 }
+
+export default WorkflowCard;

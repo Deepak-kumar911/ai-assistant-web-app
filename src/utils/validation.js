@@ -9,6 +9,17 @@ export const signInValidationSchema = yup.object({
     password: yup.string().min(6, 'Must be at least 6 characters').required('Required'),
 })
 
+export const signUpInitialValues = {
+    name: '',
+    email: '',
+    password: '',
+}
+export const signUpValidationSchema = yup.object({
+    name: yup.string(),
+    email: yup.string().email('Invalid email address').required('Required'),
+    password: yup.string().min(6, 'Must be at least 6 characters').required('Required'),
+})
+
 export const customizationInitVal = {
     color1: '',
     color2: '',

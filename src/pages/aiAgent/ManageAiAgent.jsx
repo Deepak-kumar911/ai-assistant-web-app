@@ -1,7 +1,7 @@
 // pages/ai-agent/ManageAiAgent.tsx (Redesigned - No Nested Sidebar)
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -28,11 +28,19 @@ import AgentTask from '../../components/common/ai-agent/tabs/AgentTask';
 export default function ManageAiAgent() {
   const dispatch = useDispatch();
   const { details } = useSelector(state => state?.ai_agent);
-  const [activeTab, setActiveTab] = useState('info');
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || 'info');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
   const params = useParams();
+
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const fetchDetails = async () => {
     setLoading(true);

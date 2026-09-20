@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
 
-export default function IntegrationCard({ integration, delay = 0 }) {
+export function IntegrationCard({ integration, delay = 0 }) {
   const isConnected = integration.status === 'connected';
   
   return (
@@ -36,3 +36,5 @@ export default function IntegrationCard({ integration, delay = 0 }) {
     </motion.div>
   );
 }
+
+export default IntegrationCard;

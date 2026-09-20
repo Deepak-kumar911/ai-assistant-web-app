@@ -11,9 +11,9 @@ const colorClasses = {
   blue: 'from-blue-500/20 to-blue-500/5 text-blue-400',
 };
 
-export default function StatCard({ label, value, change, icon: Icon, color }) {
+export function StatCard({ label, value, change, icon: Icon, color }) {
   const isPositive = change.startsWith('+');
-  
+
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -34,3 +34,5 @@ export default function StatCard({ label, value, change, icon: Icon, color }) {
     </motion.div>
   );
 }
+
+export default StatCard;

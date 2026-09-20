@@ -17,3 +17,13 @@ export const connectPlatformApi = (type) => {
 export const oauthIntegratePlatformApi = ({platform,agentId,code}) => {
     return getApiWithToken(`ai-agent/integration/platform/auth/${platform}/${agentId}?code=${code}`)
 }
+
+export const getInstagramStatusApi = ({ agentId = "" } = {}) => {
+    const query = agentId ? `?agentId=${agentId}` : "";
+    return getApiWithToken(`integration/instagram/status${query}`);
+}
+
+export const reconnectInstagramApi = ({ agentId = "" } = {}) => {
+    const query = agentId ? `?agentId=${agentId}` : "";
+    return postApiWithToken(`integration/instagram/reconnect${query}`, { agentId });
+}

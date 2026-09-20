@@ -7,6 +7,8 @@ import {
   FiCpu, 
   FiZap, 
   FiBarChart2, 
+  FiInbox,
+  FiMessageSquare,
   FiSettings
 } from 'react-icons/fi';
 
@@ -14,6 +16,8 @@ const mobileNavItems = [
   { url: '/dashboard', icon: FiGrid, label: 'Home' },
   { url: '/ai-agent', icon: FiCpu, label: 'Agents' },
   { url: '/workflows', icon: FiZap, label: 'Workflows' },
+  { url: '/tasks', icon: FiInbox, label: 'Responses' },
+  { url: '/inbox', icon: FiMessageSquare, label: 'Inbox' },
   { url: '/analytics', icon: FiBarChart2, label: 'Analytics' },
   { url: '/settings', icon: FiSettings, label: 'Settings' },
 ];
@@ -35,7 +39,7 @@ export default function MobileNavigation() {
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F0F12]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom"
     >
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-between sm:justify-around px-1 py-1.5 overflow-x-auto scrollbar-none">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.url);
