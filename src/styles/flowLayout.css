@@ -1,60 +1,84 @@
 .flow-canvas {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  min-height: 550px;
   overflow: hidden;
+  background: #080C14;
 }
 
-
 .layout-switch {
-  position: absolute;   /* 👈 now relative to .flow-canvas */
+  position: absolute;
   top: 16px;
   left: 16px;
   z-index: 10;
 
   display: flex;
-  gap: 8px;
-  padding: 6px;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
   border-radius: 12px;
 
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
-
-
 .layout-switch button {
-  padding: 6px 14px;
-  border-radius: 10px;
+  padding: 5px 12px;
+  border-radius: 8px;
   border: none;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-
   background: transparent;
-  color: #334155;
+  color: #94A3B8;
+  transition: all 0.15s ease;
+}
+
+.layout-switch button:hover {
+  color: #F8FAFC;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .layout-switch button.active {
-  background: #2563eb;
-  color: white;
+  background: #06B6D4;
+  color: #080C14;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.35);
 }
 
+/* ReactFlow Controls in Dark Theme */
 .react-flow__controls {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
 }
 
 .react-flow__controls button {
-  min-width: 20px;
-  min-height: 20px;
-  padding: 6px;
-  border-radius: 8px;
+  min-width: 26px !important;
+  min-height: 26px !important;
+  padding: 5px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #94A3B8 !important;
+  transition: all 0.15s ease !important;
+}
+
+.react-flow__controls button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
 }
 
 .react-flow__controls svg {
-  width: 10px;
-  height: 10px;
+  fill: currentColor !important;
+  width: 12px !important;
+  height: 12px !important;
 }

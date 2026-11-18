@@ -1,113 +1,298 @@
-/* BACKDROP */
+/* ==========================================================================
+   INSTAGRAM PREVIEW MODAL STYLES (Realistic Instagram UI)
+   ========================================================================== */
+
+/* Backdrop */
 .insta-preview-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 99999;
+  padding: 16px;
 }
 
-/* CARD */
+/* Card Shell */
 .insta-preview-card {
-  width: 340px;
-  max-height: 90vh;
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.18),
-    rgba(255,255,255,0.05)
-  );
-  backdrop-filter: blur(30px);
-  border-radius: 22px;
-  overflow: hidden;
   position: relative;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  background: #000000;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 25px 60px -15px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
 }
 
-/* MEDIA FRAME */
-.insta-media-frame {
+/* Widths per post type */
+.insta-preview-card.post,
+.insta-preview-card.carousel {
+  width: 380px;
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.insta-preview-card.reel,
+.insta-preview-card.story {
+  width: 340px;
+  max-width: 92vw;
+  height: 600px;
+  max-height: 90vh;
+}
+
+/* Close Button */
+.insta-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.insta-close-btn:hover {
+  transform: scale(1.1);
+  background: rgba(244, 63, 94, 0.8);
+}
+
+/* ---------------- Feed Post Styles ---------------- */
+.insta-feed-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.insta-post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.insta-feed-media {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #000;
+  background: #080C14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.insta-preview-card.reel .insta-media-frame,
-.insta-preview-card.story .insta-media-frame {
-  aspect-ratio: 9 / 16;
-}
-
-.insta-media-frame img,
-.insta-media-frame video {
+.insta-feed-media img,
+.insta-feed-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* CAPTION */
-.insta-caption-box {
-  padding: 12px 14px;
-  font-size: 14px;
-  color: #fff;
+.insta-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
 }
 
-.insta-caption-box strong {
-  font-weight: 600;
-  margin-right: 6px;
+.insta-caption-area {
+  padding: 0 14px 14px;
 }
 
-/* CLOSE BUTTON */
-.insta-close-btn {
+/* Carousel Overlay Elements */
+.insta-carousel-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-  background: rgba(0,0,0,0.5);
-  border: none;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
   color: #fff;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
 }
 
-/* CAROUSEL CONTROLS */
-.nav {
+.insta-nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.4);
-  border: none;
-  color: white;
-  font-size: 22px;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  cursor: pointer;
-}
-
-.nav.left { left: 8px; }
-.nav.right { right: 8px; }
-
-/* DOTS */
-.dots {
-  position: absolute;
-  bottom: 10px;
-  width: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.15s ease;
 }
 
-.dots span {
+.insta-nav-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.insta-nav-btn.left {
+  left: 10px;
+}
+
+.insta-nav-btn.right {
+  right: 10px;
+}
+
+.insta-carousel-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 0 2px;
+}
+
+.insta-dot {
   width: 6px;
   height: 6px;
-  background: rgba(255,255,255,0.4);
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
 }
 
-.dots span.active {
-  background: white;
+.insta-dot.active {
+  background: #38BDF8;
+  width: 14px;
+  border-radius: 4px;
+}
+
+/* ---------------- Reel Layout Styles (9:16) ---------------- */
+.insta-reel-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.insta-reel-top {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 50px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.insta-reel-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #080C14;
+}
+
+.insta-reel-actions {
+  position: absolute;
+  right: 12px;
+  bottom: 80px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.insta-reel-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 64px;
+  z-index: 20;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+  padding-top: 24px;
+}
+
+/* ---------------- Story Layout Styles (9:16) ---------------- */
+.insta-story-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.insta-story-bars {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 50px;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+}
+
+.insta-story-header {
+  position: absolute;
+  top: 20px;
+  left: 12px;
+  right: 50px;
+  z-index: 20;
+}
+
+.insta-story-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #080C14;
+}
+
+.insta-story-bottom {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Empty State Mock inside preview */
+.insta-empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9) 0%, #080C14 100%);
 }

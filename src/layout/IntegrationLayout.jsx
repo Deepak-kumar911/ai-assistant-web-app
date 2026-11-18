@@ -26,7 +26,7 @@ export default function IntegrationLayout() {
     setLoading(true);
     try {
       if (platform === 'instagram') {
-        const healthRes = await getInstagramStatusApi({ agentId: platformId });
+        const healthRes = await getInstagramStatusApi({ platformId });
         const healthData = healthRes?.data?.data;
         if (healthData && healthData.status !== 'connected') {
           toast.warn(
@@ -83,9 +83,8 @@ export default function IntegrationLayout() {
 
         {/* Dynamic Content Canvas with Responsive Offset */}
         <div
-          className={`relative flex flex-col flex-1 min-w-0 transition-all duration-300 ease-out w-full ${
-            sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0 md:ml-20'
-          }`}
+          className={`relative flex flex-col flex-1 min-w-0 transition-all duration-300 ease-out w-full ${sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0 md:ml-20'
+            }`}
         >
           {/* Header */}
           <Header />
@@ -95,7 +94,7 @@ export default function IntegrationLayout() {
             id="main-content"
             className="flex-1 overflow-y-auto custom-scrollbar scroll-pt-20 outline-none pb-12 md:pb-8"
           >
-            <div className="w-full max-w-[1536px] mx-auto p-3.5 sm:p-5 md:p-6 lg:p-8">
+            <div className="w-full max-w-[1536px] mx-auto">
               <Routes>
                 {/* Redirect default -> overview */}
                 <Route index element={<Navigate to="overview" replace />} />

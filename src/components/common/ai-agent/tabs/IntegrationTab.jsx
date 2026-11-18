@@ -47,9 +47,13 @@ export default function IntegrationTab({ agentId }) {
   const [reconnectingId, setReconnectingId] = useState(null);
   const navigate = useNavigate();
 
-  const fetchInstagramHealth = async () => {
+  const fetchInstagramHealth = async (items = list) => {
     try {
-      const response = await getInstagramStatusApi({ agentId });
+      const igItem = items?.find(i => i?.type === 'instagram');
+      const response = await getInstagramStatusApi({
+        platformId: igItem?._id,
+        agentId,
+      });
       if (response?.data?.data) {
         setInstagramHealth(response.data.data);
       }
@@ -62,8 +66,9 @@ export default function IntegrationTab({ agentId }) {
     setLoading(true);
     try {
       const response = await getAllPlatformIntegrationApi();
-      setList(response?.data?.data || []);
-      await fetchInstagramHealth();
+      const items = response?.data?.data || [];
+      setList(items);
+      await fetchInstagramHealth(items);
     } catch (error) {
       console.error('Error fetching integrations:', error);
       toast.error(error?.response?.data?.message || 'Something went wrong!');
@@ -92,7 +97,7 @@ export default function IntegrationTab({ agentId }) {
       setReconnectingId(item._id);
       setActiveMenuId(null);
       toast.info("Preparing Instagram reconnection session...");
-      const response = await reconnectInstagramApi({ agentId });
+      const response = await reconnectInstagramApi({ platformId: item._id, agentId });
       const authUrl = response?.data?.url;
       if (authUrl) {
         window.location.href = authUrl;
@@ -316,7 +321,6 @@ export default function IntegrationTab({ agentId }) {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    fetchInstagramHealth();
                                     fetchList();
                                     setActiveMenuId(null);
                                     toast.success("Health status refreshed");

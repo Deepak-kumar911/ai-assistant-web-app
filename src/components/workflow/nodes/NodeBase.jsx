@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Handle } from "reactflow";
 import { motion } from "framer-motion";
+import { Trash2 } from "lucide-react";
 import { getHandlePositions } from "../hooks/useHandlePosition";
 import { getHandleStyle } from "../hooks/getHandleStyle";
 import { useDeleteSubgraph } from "../hooks/useDeleteSubgraph";
@@ -8,48 +9,67 @@ import { useDeleteSubgraph } from "../hooks/useDeleteSubgraph";
 function NodeBase({
   id,
   title,
+  badge,
   icon,
   children,
   data,
   handles = [],
   actions = [],
   selected,
-  disableDelete=true,
-  style
+  disableDelete = true,
+  style = {},
 }) {
   const direction = data?.layoutDirection || "LR";
   const { source, target } = getHandlePositions(direction);
-    const { deleteFromNode } = useDeleteSubgraph();
+  const { deleteFromNode } = useDeleteSubgraph();
 
   const defaultActions = disableDelete
     ? []
-    : [ {
-        id: "delete",
-        className: "node-delete-btn",
-        title: "Delete",
-        btnName: "🗑",
-        onClick: () => deleteFromNode(id),
-      },];
+    : [
+        {
+          id: "delete",
+          className: "node-delete-btn",
+          title: "Delete node",
+          btnName: <Trash2 className="w-3.5 h-3.5 text-rose-400" />,
+          onClick: () => deleteFromNode(id),
+        },
+      ];
 
   return (
     <motion.div
-      className={`glass-node ${selected ? "selected" : ""}`}
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      className={`glass-node group ${selected ? "selected" : ""}`}
+      initial={{ opacity: 0, y: 8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      whileHover={{ scale: 1.03 }}
-      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
       style={style}
     >
-      {/* Header */}
-           <div className="node-header">
-        <span className="node-icon">{icon}</span>
-        <span className="node-title">{title}</span>
+      {/* Top ambient glow accent */}
+      <div
+        className="absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
 
-        <div className="node-actions">
+      {/* Header */}
+      <div className="node-header">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="node-icon shrink-0">{icon}</div>
+          <div className="min-w-0">
+            <h4 className="node-title truncate">{title}</h4>
+            {badge && (
+              <span className="text-[9px] font-bold tracking-widest uppercase text-cyan-400/90 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.2 rounded-md">
+                {badge}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="node-actions shrink-0">
           {[...actions, ...defaultActions].map((action) => (
             <button
               key={action.id}
-              className={`node-action-btn ${action.className}`}
+              type="button"
+              className={`node-action-btn ${action.className || ""}`}
               title={action.title}
               onClick={(e) => {
                 e.stopPropagation();
@@ -65,9 +85,8 @@ function NodeBase({
       {/* Content */}
       <div className="node-body">{children}</div>
 
-
       {/* Handles */}
-      {handles.map((h, i) => (
+      {handles.map((h) => (
         <Handle
           key={h.id}
           id={h.id}

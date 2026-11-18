@@ -1,62 +1,83 @@
 // components/templates/InstagramTemplate.js
 import { nanoid } from 'nanoid';
 
+const scheduleId = nanoid();
+const instaId = nanoid();
+const commentId = nanoid();
+const dmId = nanoid();
+
 export const instagramTemplate = {
     nodes: [
         {
-            id: nanoid(),
+            id: scheduleId,
             type: 'schedule',
-            position: { x: 100, y: 100 },
+            position: { x: 50, y: 120 },
             data: {
-                scheduleType: 'future',
-                scheduledDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+                scheduleType: 'instant',
+                interval: 'one-time',
+                scheduledDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
                 scheduledTime: '10:00'
             }
         },
         {
-            id: nanoid(),
+            id: instaId,
             type: 'instagram',
-            position: { x: 400, y: 100 },
+            position: { x: 420, y: 120 },
             data: {
                 credentialId: '',
                 credentialName: '',
                 postType: 'post',
                 media: [],
                 caption: '',
-                scheduleType: 'instant',
                 location: '',
                 firstComment: ''
             }
         },
         {
-            id: nanoid(),
+            id: commentId,
             type: 'commentReply',
-            position: { x: 700, y: 100 },
+            position: { x: 800, y: 120 },
             data: {
                 mode: 'keyword',
                 keyword: '',
                 reply: '',
                 prompt: ''
             }
+        },
+        {
+            id: dmId,
+            type: 'dm',
+            position: { x: 1180, y: 120 },
+            data: {
+                dmType: 'text',
+                text: ''
+            }
         }
     ],
-    edges: []
-    // edges: [
-    //     {
-    //         id: nanoid(),
-    //         source: nodes[0].id,
-    //         target: nodes[1].id,
-    //         sourceHandle: 'schedule',
-    //         targetHandle: 'in',
-    //         animated: true
-    //     },
-    //     {
-    //         id: nanoid(),
-    //         source: nodes[1].id,
-    //         target: nodes[2].id,
-    //         sourceHandle: 'comments',
-    //         targetHandle: 'keyword',
-    //         animated: true
-    //     }
-    // ]
+    edges: [
+        {
+            id: `e_${scheduleId}_${instaId}`,
+            source: scheduleId,
+            target: instaId,
+            sourceHandle: 'schedule',
+            targetHandle: 'in',
+            animated: true,
+        },
+        {
+            id: `e_${instaId}_${commentId}`,
+            source: instaId,
+            target: commentId,
+            sourceHandle: 'comments',
+            targetHandle: 'keyword',
+            animated: true,
+        },
+        {
+            id: `e_${commentId}_${dmId}`,
+            source: commentId,
+            target: dmId,
+            sourceHandle: 'reply',
+            targetHandle: 'in',
+            animated: true,
+        }
+    ]
 };

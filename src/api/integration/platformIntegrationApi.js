@@ -18,12 +18,29 @@ export const oauthIntegratePlatformApi = ({platform,agentId,code}) => {
     return getApiWithToken(`ai-agent/integration/platform/auth/${platform}/${agentId}?code=${code}`)
 }
 
-export const getInstagramStatusApi = ({ agentId = "" } = {}) => {
-    const query = agentId ? `?agentId=${agentId}` : "";
+export const getInstagramStatusApi = (params = {}) => {
+    let platformId = "";
+    if (typeof params === "string") {
+        platformId = params;
+    } else if (params && typeof params === "object") {
+        platformId = params.platformId || params.agentId || "";
+    }
+    const query = platformId ? `?platformId=${platformId}` : "";
     return getApiWithToken(`integration/instagram/status${query}`);
 }
 
-export const reconnectInstagramApi = ({ agentId = "" } = {}) => {
-    const query = agentId ? `?agentId=${agentId}` : "";
-    return postApiWithToken(`integration/instagram/reconnect${query}`, { agentId });
+export const reconnectInstagramApi = (params = {}) => {
+    let platformId = "";
+    let agentId = "";
+    if (typeof params === "string") {
+        platformId = params;
+    } else if (params && typeof params === "object") {
+        platformId = params.platformId || params.agentId || "";
+        agentId = params.agentId || "";
+    }
+    const query = platformId ? `?platformId=${platformId}` : "";
+    return postApiWithToken(`integration/instagram/reconnect${query}`, {
+        platformId,
+        ...(agentId ? { agentId } : {})
+    });
 }

@@ -5,17 +5,17 @@ export const validateNode = (node) => {
 
     switch (node.type) {
         case 'schedule':
-            if (!node.data.scheduleType) {
-                errors.push({ nodeId: node.id, field: 'scheduleType', message: 'Schedule type is required' });
-            }
-            if (node.data.scheduleType === 'future') {
-                if (!node.data.scheduledDate) {
+            const scheduleType = node.data.scheduleType || 'instant';
+            if (scheduleType === 'future') {
+                const dateVal = node.data.scheduledDate || node.data.date;
+                const timeVal = node.data.scheduledTime || node.data.time;
+                if (!dateVal) {
                     errors.push({ nodeId: node.id, field: 'scheduledDate', message: 'Schedule date is required' });
                 }
-                if (!node.data.scheduledTime) {
+                if (!timeVal) {
                     errors.push({ nodeId: node.id, field: 'scheduledTime', message: 'Schedule time is required' });
                 }
-                if (node.data.scheduledDate && new Date(node.data.scheduledDate) < new Date()) {
+                if (dateVal && new Date(dateVal) < new Date(Date.now() - 86400000)) {
                     errors.push({ nodeId: node.id, field: 'scheduledDate', message: 'Schedule date cannot be in the past' });
                 }
             }
